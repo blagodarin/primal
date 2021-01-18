@@ -47,7 +47,7 @@ before_install:
 
 script:
   - mkdir "${HOME}/primal.build" && pushd "${HOME}/primal.build"
-  - cmake "${TRAVIS_BUILD_DIR}" -G Ninja -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_INSTALL_PREFIX="${HOME}/primal.install" -DWITH_TESTS=ON
+  - cmake "${TRAVIS_BUILD_DIR}" -G Ninja -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_INSTALL_PREFIX="${HOME}/primal.install" -DPRIMAL_TESTS=ON
   - TERM=dumb cmake --build .
   - ctest --verbose
   - TERM=dumb cmake --build . --target install

@@ -4,17 +4,24 @@
 
 cmake_minimum_required(VERSION 3.15)
 
-project(Primal VERSION 0.0.0.0 HOMEPAGE_URL https://github.com/blagodarin/primal LANGUAGES CXX)
+if(DEFINED PROJECT_NAME)
+	set(PRIMAL_SUBPROJECT ON)
+	set(CMAKE_FOLDER ".subprojects")
+endif()
+
+project(Primal LANGUAGES CXX)
 
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 
+if(NOT PRIMAL_SUBPROJECT)
+	set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ".cmake")
+	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+endif()
+
+option(PRIMAL_TESTS "Build Primal tests" OFF)
+
 set(CMAKE_CXX_STANDARD 20)
-
-set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ".cmake")
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-option(WITH_TESTS "Build tests" OFF)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	add_compile_options(-Werror -Wall -Wextra)
@@ -106,14 +113,14 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
 endif()
 primal_install(primal EXPORT PrimalTargets)
 
-if(WITH_TESTS)
+if(PRIMAL_TESTS)
 	enable_testing()
 	primal_download("https://raw.githubusercontent.com/onqtam/doctest/2.4.4/doctest/doctest.h" SHA1 "7c25b870f3e0cde6d6c8596c60f3592fe557989a")
 	add_subdirectory(tests)
 endif()
 
 configure_package_config_file(PrimalConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/PrimalConfig.cmake INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Primal)
-write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/PrimalConfigVersion.cmake COMPATIBILITY AnyNewerVersion)
+write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/PrimalConfigVersion.cmake VERSION 0.0.0 COMPATIBILITY AnyNewerVersion)
 install(DIRECTORY primal DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/PrimalConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/PrimalConfigVersion.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Primal)
 install(EXPORT PrimalTargets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Primal NAMESPACE Primal::)
