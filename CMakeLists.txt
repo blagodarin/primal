@@ -28,6 +28,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	add_compile_options(/std:c++latest /Wall /WX
 		/wd4514 # unreferenced inline function has been removed
 		/wd4710 # function not inlined
+		/wd4711 # function '___' selected for automatic inline expansion
 		/wd4820 # '___' bytes padding added after data member '___'
 		)
 endif()
@@ -111,9 +112,8 @@ if(WITH_TESTS)
 	add_subdirectory(tests)
 endif()
 
-set(PRIMAL_CMAKE ${CMAKE_INSTALL_LIBDIR}/cmake/Primal)
-configure_package_config_file(cmake/PrimalConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/PrimalConfig.cmake INSTALL_DESTINATION ${PRIMAL_CMAKE})
-write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/PrimalConfigVersion.cmake COMPATIBILITY SameMinorVersion)
+configure_package_config_file(PrimalConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/PrimalConfig.cmake INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Primal)
+write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/PrimalConfigVersion.cmake COMPATIBILITY AnyNewerVersion)
 install(DIRECTORY primal DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/PrimalConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/PrimalConfigVersion.cmake DESTINATION ${PRIMAL_CMAKE})
-install(EXPORT PrimalTargets DESTINATION ${PRIMAL_CMAKE} NAMESPACE Primal::)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/PrimalConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/PrimalConfigVersion.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Primal)
+install(EXPORT PrimalTargets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Primal NAMESPACE Primal::)

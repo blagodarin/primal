@@ -1,0 +1,57 @@
+language: cpp
+
+git:
+  depth: 1
+
+matrix:
+  include:
+
+    - os: linux
+      dist: focal
+      compiler: gcc
+      env: GCC=10 CONFIG=Release
+      addons: &gcc_addons
+        apt:
+          packages:
+            - g++-10
+            - ninja-build
+
+    - os: linux
+      dist: focal
+      compiler: gcc
+      env: GCC=10 CONFIG=Debug
+      addons: *gcc_addons
+
+    - os: linux
+      dist: focal
+      compiler: clang
+      env: CLANG=11 CONFIG=Release
+      addons: &clang_addons
+        apt:
+          packages:
+            - clang-11
+            - libstdc++-10-dev
+            - ninja-build
+
+    - os: linux
+      dist: focal
+      compiler: clang
+      env: CLANG=11 CONFIG=Debug
+      addons: *clang_addons
+
+before_install:
+  - if [ -n "${CLANG}" ]; then export CXX=clang++-${CLANG}; fi
+  - if [ -n "${GCC}" ]; then export CXX=g++-${GCC}; fi
+  - ${CXX} --version
+  - cmake --version
+
+script:
+  - mkdir "${HOME}/primal.build" && pushd "${HOME}/primal.build"
+  - cmake "${TRAVIS_BUILD_DIR}" -G Ninja -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_INSTALL_PREFIX="${HOME}/primal.install" -DWITH_TESTS=ON
+  - TERM=dumb cmake --build .
+  - ctest --verbose
+  - TERM=dumb cmake --build . --target install
+  - popd
+
+notifications:
+  email: false
