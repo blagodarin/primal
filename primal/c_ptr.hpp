@@ -2,21 +2,31 @@
 // Copyright (C) Sergei Blagodarin.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <type_traits>
-
 namespace primal
 {
+	// Smart pointer for working with C APIs.
 	template <typename T, auto deleter>
 	class CPtr
 	{
 	public:
-		using Value = std::remove_all_extents_t<std::remove_reference_t<T>>;
-
 		constexpr CPtr() noexcept = default;
+
 		CPtr(const CPtr&) = delete;
+
+		constexpr CPtr(CPtr&& other) noexcept
+			: _pointer{ other._pointer } { other._pointer = nullptr; }
+
 		CPtr& operator=(const CPtr&) = delete;
 
-		constexpr explicit CPtr(Value* pointer) noexcept
+		constexpr CPtr& operator=(CPtr&& other) noexcept
+		{
+			const auto pointer = _pointer;
+			_pointer = other._pointer;
+			other._pointer = pointer;
+			return *this;
+		}
+
+		constexpr explicit CPtr(T* pointer) noexcept
 			: _pointer{ pointer } {}
 
 		~CPtr() noexcept
@@ -25,13 +35,13 @@ namespace primal
 				deleter(_pointer);
 		}
 
-		constexpr operator Value*() const noexcept { return _pointer; }
-		constexpr Value* operator->() const noexcept { return _pointer; }
+		constexpr operator T*() const noexcept { return _pointer; }
+		constexpr T* operator->() const noexcept { return _pointer; }
 
-		constexpr Value* get() const noexcept { return _pointer; }
-		constexpr Value** out() noexcept { return &_pointer; }
+		constexpr auto get() const noexcept { return _pointer; }
+		constexpr auto out() noexcept { return &_pointer; }
 
 	private:
-		Value* _pointer = nullptr;
+		T* _pointer = nullptr;
 	};
 }
