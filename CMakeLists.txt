@@ -21,11 +21,32 @@ option(PRIMAL_TESTS "Build Primal tests" OFF)
 set(CMAKE_CXX_STANDARD 20)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-	add_compile_options(-Werror -Wall -Wextra)
+	add_compile_options(-Werror -Weverything
+		-Wno-c++98-compat
+		-Wno-c++98-compat-pedantic
+		-Wno-float-equal
+		)
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-	add_compile_options(-Werror -Wall -Wextra)
+	add_compile_options(-Werror -Wall -Wextra
+		-Wconversion
+		-Wdisabled-optimization
+		-Wduplicated-branches
+		-Wduplicated-cond
+		-Wlogical-op
+		-Wmissing-declarations
+		-Wmissing-include-dirs
+		-Wnull-dereference
+		-Wpedantic
+		-Wredundant-decls
+		-Wshadow
+		-Wsign-conversion
+		-Wundef
+		-Wuninitialized
+		-Wunsafe-loop-optimizations
+		-Wunused-macros
+		)
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
