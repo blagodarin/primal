@@ -30,5 +30,5 @@ TEST_CASE("Buffer::Buffer(3)")
 
 TEST_CASE("Buffer::Buffer(SIZE_MAX)")
 {
-	CHECK_THROWS_AS(primal::Buffer<int> buffer{ std::numeric_limits<size_t>::max() }, std::bad_alloc);
+	CHECK_THROWS_AS(primal::Buffer<std::byte> buffer{ static_cast<size_t>(std::numeric_limits<std::make_signed_t<size_t>>::max()) }, std::bad_alloc);
 }

@@ -49,7 +49,7 @@ script:
   - mkdir "${HOME}/primal.build" && pushd "${HOME}/primal.build"
   - cmake "${TRAVIS_BUILD_DIR}" -G Ninja -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_INSTALL_PREFIX="${HOME}/primal.install" -DPRIMAL_TESTS=ON
   - TERM=dumb cmake --build .
-  - ctest --verbose
+  - ASAN_OPTIONS=allocator_may_return_null=1 ctest --verbose
   - TERM=dumb cmake --build . --target install
   - popd
   - mkdir "${HOME}/primal.import" && pushd "${HOME}/primal.import"
