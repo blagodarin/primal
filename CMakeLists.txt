@@ -14,7 +14,9 @@ include(cmake/PrimalUtils.cmake)
 
 primal_defaults()
 
-option(PRIMAL_TESTS "Build Primal tests" OFF)
+if(NOT PRIMAL_SUBPROJECT)
+	option(PRIMAL_TESTS "Build Primal tests" OFF)
+endif()
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -58,7 +60,7 @@ endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|GNU)$")
 	add_compile_options(-fsanitize=address -fsanitize=undefined)
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address -fsanitize=undefined")
+	string(JOIN " " CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address -fsanitize=undefined)
 endif()
 
 add_library(primal INTERFACE)
@@ -76,7 +78,7 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
 endif()
 primal_install(primal EXPORT PrimalTargets)
 
-if(PRIMAL_TESTS)
+if(NOT PRIMAL_SUBPROJECT AND PRIMAL_TESTS)
 	enable_testing()
 	primal_download("https://raw.githubusercontent.com/onqtam/doctest/2.4.4/doctest/doctest.h" SHA1 "7c25b870f3e0cde6d6c8596c60f3592fe557989a")
 	add_subdirectory(tests)
