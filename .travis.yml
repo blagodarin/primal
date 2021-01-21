@@ -52,6 +52,10 @@ script:
   - ctest --verbose
   - TERM=dumb cmake --build . --target install
   - popd
+  - mkdir "${HOME}/primal.import" && pushd "${HOME}/primal.import"
+  - cmake "${TRAVIS_BUILD_DIR}/tests/import" -G Ninja -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_PREFIX_PATH="${HOME}/primal.install"
+  - TERM=dumb cmake --build .
+  - popd
 
 notifications:
   email: false

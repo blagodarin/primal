@@ -4,6 +4,23 @@
 
 include(GNUInstallDirs)
 
+function(primal_defaults)
+	if(NOT DEFINED PROJECT_NAME)
+		message(SEND_ERROR "PROJECT_NAME has not been defined")
+		return()
+	endif()
+	string(TOUPPER ${PROJECT_NAME} _project_name_upper)
+	if(${_project_name_upper}_SUBPROJECT)
+		if(NOT CMAKE_FOLDER)
+			set(CMAKE_FOLDER ".subprojects")
+		endif()
+	else()
+		set_property(GLOBAL PROPERTY AUTOGEN_SOURCE_GROUP "qt")
+		set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ".cmake")
+		set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+	endif()
+endfunction()
+
 function(primal_download _url)
 	cmake_parse_arguments(_arg "" "SHA1" "" ${ARGN})
 	string(REGEX REPLACE "^.*/([^/]+)$" "\\1" _name ${_url})

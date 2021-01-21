@@ -6,15 +6,13 @@ cmake_minimum_required(VERSION 3.15)
 
 if(DEFINED PROJECT_NAME)
 	set(PRIMAL_SUBPROJECT ON)
-	set(CMAKE_FOLDER ".subprojects")
-else()
-	set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ".cmake")
-	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 endif()
 
 project(Primal LANGUAGES CXX)
 
 include(cmake/PrimalUtils.cmake)
+
+primal_defaults()
 
 option(PRIMAL_TESTS "Build Primal tests" OFF)
 
