@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <primal/fixed.hpp>
+#include <primal/fixed.hpp>
 
 #include <doctest.h>
 

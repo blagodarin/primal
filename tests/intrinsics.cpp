@@ -3,3 +3,4 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <primal/intrinsics.hpp>
+#include <primal/intrinsics.hpp>

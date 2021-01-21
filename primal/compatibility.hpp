@@ -2,6 +2,8 @@
 // Copyright (C) Sergei Blagodarin.
 // SPDX-License-Identifier: Apache-2.0
 
+#pragma once
+
 // [[likely]] and [[unlikely]] require Clang 12.
 #if __has_cpp_attribute(likely) && __has_cpp_attribute(unlikely)
 #	define PRIMAL_LIKELY [[likely]]

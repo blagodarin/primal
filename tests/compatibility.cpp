@@ -3,3 +3,4 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <primal/compatibility.hpp>
+#include <primal/compatibility.hpp>

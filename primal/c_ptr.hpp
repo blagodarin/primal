@@ -2,6 +2,8 @@
 // Copyright (C) Sergei Blagodarin.
 // SPDX-License-Identifier: Apache-2.0
 
+#pragma once
+
 namespace primal
 {
 	// Smart pointer for working with C APIs.
