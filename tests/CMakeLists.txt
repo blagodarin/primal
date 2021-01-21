@@ -5,6 +5,7 @@
 add_executable(primal_tests
 	allocator.cpp
 	c_ptr.cpp
+	compatibility.cpp
 	fixed.cpp
 	intrinsics.cpp
 	main.cpp

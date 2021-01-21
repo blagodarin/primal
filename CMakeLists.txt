@@ -67,6 +67,7 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
 	target_sources(primal PRIVATE
 		primal/allocator.hpp
 		primal/c_ptr.hpp
+		primal/compatibility.hpp
 		primal/fixed.hpp
 		primal/intrinsics.hpp
 		primal/rigid_vector.hpp

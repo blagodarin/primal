@@ -2,6 +2,8 @@
 // Copyright (C) Sergei Blagodarin.
 // SPDX-License-Identifier: Apache-2.0
 
+#include <primal/compatibility.hpp>
+
 #include <bit>
 #include <cstdlib>
 #include <new>
@@ -14,7 +16,7 @@ namespace primal
 		static void* allocate(size_t size)
 		{
 			if (const auto memory = std::malloc(size); memory)
-				[[likely]] return memory;
+				PRIMAL_LIKELY return memory;
 			throw std::bad_alloc{};
 		}
 
@@ -39,7 +41,7 @@ namespace primal
 #else
 			if (const auto memory = std::aligned_alloc(kAlignment, alignedSize); memory)
 #endif
-				[[likely]] return memory;
+				PRIMAL_LIKELY return memory;
 			throw std::bad_alloc{};
 		}
 
