@@ -10,13 +10,14 @@ namespace primal
 	{
 	public:
 		constexpr CPtr() noexcept = default;
-
 		CPtr(const CPtr&) = delete;
+		CPtr& operator=(const CPtr&) = delete;
+
+		constexpr explicit CPtr(T* pointer) noexcept
+			: _pointer{ pointer } {}
 
 		constexpr CPtr(CPtr&& other) noexcept
 			: _pointer{ other._pointer } { other._pointer = nullptr; }
-
-		CPtr& operator=(const CPtr&) = delete;
 
 		constexpr CPtr& operator=(CPtr&& other) noexcept
 		{
@@ -26,20 +27,16 @@ namespace primal
 			return *this;
 		}
 
-		constexpr explicit CPtr(T* pointer) noexcept
-			: _pointer{ pointer } {}
-
 		~CPtr() noexcept
 		{
 			if (_pointer)
 				deleter(_pointer);
 		}
 
-		constexpr operator T*() const noexcept { return _pointer; }
-		constexpr T* operator->() const noexcept { return _pointer; }
-
-		constexpr auto get() const noexcept { return _pointer; }
-		constexpr auto out() noexcept { return &_pointer; }
+		[[nodiscard]] constexpr operator T*() const noexcept { return _pointer; }
+		[[nodiscard]] constexpr T* operator->() const noexcept { return _pointer; }
+		[[nodiscard]] constexpr T* get() const noexcept { return _pointer; }
+		[[nodiscard]] constexpr T** out() noexcept { return &_pointer; }
 
 	private:
 		T* _pointer = nullptr;

@@ -12,13 +12,13 @@ namespace
 {
 	struct Value
 	{
-		unsigned counter = 0;
+		unsigned _counter = 0;
 	};
 
 	void increment(Value* pointer)
 	{
 		REQUIRE(pointer);
-		++pointer->counter;
+		++pointer->_counter;
 	}
 
 	using RawPtr = Value*;
@@ -45,10 +45,10 @@ TEST_CASE("CPtr::CPtr(T*)")
 		CHECK(ptr.get() == &value);
 		REQUIRE(ptr.out());
 		CHECK(*ptr.out() == &value);
-		CHECK(&ptr->counter == &value.counter);
-		CHECK(value.counter == 0);
+		CHECK(&ptr->_counter == &value._counter);
+		CHECK(value._counter == 0);
 	}
-	CHECK(value.counter == 1);
+	CHECK(value._counter == 1);
 }
 
 TEST_CASE("CPtr::CPtr(CPtr&&)")
@@ -60,9 +60,9 @@ TEST_CASE("CPtr::CPtr(CPtr&&)")
 		CPtr second{ std::move(first) };
 		CHECK(!first);
 		CHECK(second);
-		CHECK(value.counter == 0);
+		CHECK(value._counter == 0);
 	}
-	CHECK(value.counter == 1);
+	CHECK(value._counter == 1);
 }
 
 TEST_CASE("CPtr::operator=(CPtr&&)")
@@ -76,7 +76,7 @@ TEST_CASE("CPtr::operator=(CPtr&&)")
 		second = std::move(first);
 		CHECK(!first);
 		CHECK(second);
-		CHECK(value.counter == 0);
+		CHECK(value._counter == 0);
 	}
-	CHECK(value.counter == 1);
+	CHECK(value._counter == 1);
 }
