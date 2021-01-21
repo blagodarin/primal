@@ -68,6 +68,7 @@ target_include_directories(primal INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SO
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
 	target_sources(primal PRIVATE
 		primal/allocator.hpp
+		primal/buffer.hpp
 		primal/c_ptr.hpp
 		primal/compatibility.hpp
 		primal/fixed.hpp
