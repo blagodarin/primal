@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 add_executable(primal_tests
+	allocator.cpp
 	c_ptr.cpp
 	fixed.cpp
 	intrinsics.cpp

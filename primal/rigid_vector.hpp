@@ -4,8 +4,9 @@
 
 #pragma once
 
+#include <primal/allocator.hpp>
+
 #include <cassert>
-#include <cstdlib>
 #include <memory>
 #include <type_traits>
 #include <utility>
@@ -16,7 +17,7 @@ namespace primal
 	// * is noncopyable and is able to contain immovable objects;
 	// * requires reserve() before use and allows only one reserve() during lifetime;
 	// * doesn't check preconditions at runtime.
-	template <typename T>
+	template <typename T, typename A = Allocator>
 	class RigidVector
 	{
 	public:
@@ -36,7 +37,7 @@ namespace primal
 		~RigidVector() noexcept
 		{
 			std::destroy_n(_data, _size);
-			std::free(_data);
+			A::deallocate(_data);
 		}
 
 		RigidVector& operator=(const RigidVector&) = delete;
@@ -83,9 +84,7 @@ namespace primal
 		template <typename... Args>
 		T& emplace_back(Args&&... args)
 		{
-#ifndef NDEBUG
 			assert(_size < _capacity);
-#endif
 			T* value = new (_data + _size) T{ std::forward<Args>(args)... };
 			++_size;
 			return *value;
@@ -101,9 +100,7 @@ namespace primal
 		void reserve(size_t capacity)
 		{
 			assert(!_data);
-			_data = static_cast<T*>(std::malloc(capacity * sizeof(T)));
-			if (!_data)
-				throw std::bad_alloc{};
+			_data = static_cast<T*>(A::allocate(capacity * sizeof(T)));
 #ifndef NDEBUG
 			_capacity = capacity;
 #endif

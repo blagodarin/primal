@@ -65,6 +65,7 @@ add_library(primal INTERFACE)
 target_include_directories(primal INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
 	target_sources(primal PRIVATE
+		primal/allocator.hpp
 		primal/c_ptr.hpp
 		primal/fixed.hpp
 		primal/intrinsics.hpp
