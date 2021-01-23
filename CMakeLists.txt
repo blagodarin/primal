@@ -51,10 +51,11 @@ endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	add_compile_options(/std:c++latest /Wall /WX
-		/wd4514 # unreferenced inline function has been removed
-		/wd4710 # function not inlined
-		/wd4711 # function '___' selected for automatic inline expansion
-		/wd4820 # '___' bytes padding added after data member '___'
+		/wd4514 # 'function' : unreferenced inline function has been removed
+		/wd4710 # 'function' : function not inlined
+		/wd4711 # function 'function' selected for inline expansion
+		/wd4738 # storing 32-bit float result in memory, possible loss of performance
+		/wd4820 # 'bytes' bytes padding added after construct 'member_name'
 		)
 endif()
 

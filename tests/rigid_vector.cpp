@@ -3,4 +3,3 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <primal/rigid_vector.hpp>
-#include <primal/rigid_vector.hpp>
