@@ -19,7 +19,7 @@ matrix:
     - os: linux
       dist: focal
       compiler: gcc
-      env: GCC=10 CONFIG=Debug
+      env: GCC=10 CONFIG=Debug COVERAGE=1
       addons: *gcc_addons
 
     - os: linux
@@ -46,6 +46,10 @@ before_install:
   - cmake --version
 
 script:
+  - if [ -z "${COVERAGE}" ]; then export CXXFLAGS="-fsanitize=address -fsanitize=undefined"; fi
+  - if [ -z "${COVERAGE}" ]; then export LDFLAGS="-fsanitize=address -fsanitize=undefined"; fi
+  - if [ -n "${COVERAGE}" ]; then export CXXFLAGS="--coverage"; fi
+  - if [ -n "${COVERAGE}" ]; then export LDFLAGS="--coverage"; fi
   - mkdir "${HOME}/primal.build" && pushd "${HOME}/primal.build"
   - cmake "${TRAVIS_BUILD_DIR}" -G Ninja -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_INSTALL_PREFIX="${HOME}/primal.install" -DPRIMAL_TESTS=ON
   - TERM=dumb cmake --build .
@@ -56,6 +60,9 @@ script:
   - cmake "${TRAVIS_BUILD_DIR}/tests/import" -G Ninja -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_PREFIX_PATH="${HOME}/primal.install"
   - TERM=dumb cmake --build .
   - popd
+
+after_success:
+  - if [ -n "${COVERAGE}" ]; then bash <(curl -s https://codecov.io/bash) -x gcov-${GCC} -a "--source-prefix `pwd`"; fi
 
 notifications:
   email: false

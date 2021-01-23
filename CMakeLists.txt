@@ -50,18 +50,13 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-	add_compile_options(/std:c++latest /Wall /WX
+	add_compile_options(/Wall /WX
 		/wd4514 # 'function' : unreferenced inline function has been removed
 		/wd4710 # 'function' : function not inlined
 		/wd4711 # function 'function' selected for inline expansion
 		/wd4738 # storing 32-bit float result in memory, possible loss of performance
 		/wd4820 # 'bytes' bytes padding added after construct 'member_name'
 		)
-endif()
-
-if(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|GNU)$")
-	add_compile_options(-fsanitize=address -fsanitize=undefined)
-	string(JOIN " " CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address -fsanitize=undefined)
 endif()
 
 add_library(primal INTERFACE)
