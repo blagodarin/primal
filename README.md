@@ -4,3 +4,5 @@
 [![Codecov](https://codecov.io/gh/blagodarin/primal/branch/master/graph/badge.svg?token=0TKC783CRH)](https://codecov.io/gh/blagodarin/primal)
 
 # Primal
+
+Primal is a utility library that accumulates common functionality from sibling projects.

@@ -46,13 +46,13 @@ before_install:
   - cmake --version
 
 install:
-  - if [ -n "${COVERAGE}" ]; then pip install --user codecov; fi
-
-script:
   - if [ -z "${COVERAGE}" ]; then export CXXFLAGS="-fsanitize=address -fsanitize=undefined"; fi
   - if [ -z "${COVERAGE}" ]; then export LDFLAGS="-fsanitize=address -fsanitize=undefined"; fi
   - if [ -n "${COVERAGE}" ]; then export CXXFLAGS="--coverage"; fi
   - if [ -n "${COVERAGE}" ]; then export LDFLAGS="--coverage"; fi
+  - if [ -n "${COVERAGE}" ]; then pip install --user codecov; fi
+
+script:
   - mkdir "${HOME}/primal.build" && pushd "${HOME}/primal.build"
   - cmake "${TRAVIS_BUILD_DIR}" -G Ninja -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_INSTALL_PREFIX="${HOME}/primal.install" -DPRIMAL_TESTS=ON
   - TERM=dumb cmake --build .
