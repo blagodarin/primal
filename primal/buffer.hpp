@@ -5,9 +5,11 @@
 #pragma once
 
 #include <primal/allocator.hpp>
+#include <primal/c_ptr.hpp>
 
-#include <cassert>
+#include <cstring>
 #include <memory>
+#include <type_traits>
 
 namespace primal
 {
@@ -15,41 +17,31 @@ namespace primal
 	class Buffer
 	{
 	public:
+		static_assert(std::is_trivially_default_constructible_v<T> && std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>);
+
 		constexpr Buffer() noexcept = default;
+		~Buffer() noexcept = default;
 		Buffer(const Buffer&) = delete;
 		Buffer& operator=(Buffer&) = delete;
 
 		explicit Buffer(size_t size)
-			: _data{ static_cast<T*>(A::allocate(size * sizeof(T))) }
-			, _size{ size }
-		{
-			new (_data) T[size];
-		}
-
-		~Buffer() noexcept
-		{
-			std::destroy_n(_data, _size);
-			A::deallocate(_data);
-		}
+			: _data{ static_cast<T*>(A::allocate(size * sizeof(T))) }, _size{ size } {}
 
 		[[nodiscard]] constexpr T* data() noexcept { return _data; }
 		[[nodiscard]] constexpr const T* data() const noexcept { return _data; }
 		[[nodiscard]] constexpr size_t size() const noexcept { return _size; }
 
-		[[nodiscard]] constexpr T& operator[](size_t index) noexcept
+		void resize(size_t newSize, bool copy = true)
 		{
-			assert(index < _size);
-			return _data[index];
-		}
-
-		[[nodiscard]] constexpr const T& operator[](size_t index) const noexcept
-		{
-			assert(index < _size);
-			return _data[index];
+			decltype(_data) newData{ static_cast<T*>(A::allocate(newSize * sizeof(T))) };
+			if (copy && newData && _data) // UBSan requires checking data pointers even if there is nothing to copy.
+				std::memcpy(newData, _data, (newSize < _size ? newSize : _size) * sizeof(T));
+			_data = std::move(newData);
+			_size = newSize;
 		}
 
 	private:
-		T* _data = nullptr;
+		CPtr<T, A::deallocate> _data;
 		size_t _size = 0;
 	};
 }
