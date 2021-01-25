@@ -4,8 +4,6 @@
 
 #include <primal/c_ptr.hpp>
 
-#include <utility>
-
 #include <doctest.h>
 
 namespace
@@ -79,4 +77,21 @@ TEST_CASE("CPtr::operator=(CPtr&&)")
 		CHECK(value._counter == 0);
 	}
 	CHECK(value._counter == 1);
+}
+
+TEST_CASE("swap(CPtr&, CPtr&)")
+{
+	Value firstValue;
+	Value secondValue;
+	{
+		CPtr firstPtr{ &firstValue };
+		CPtr secondPtr{ &secondValue };
+		swap(firstPtr, secondPtr);
+		CHECK(firstPtr.get() == &secondValue);
+		CHECK(secondPtr.get() == &firstValue);
+		CHECK(firstValue._counter == 0);
+		CHECK(secondValue._counter == 0);
+	}
+	CHECK(firstValue._counter == 1);
+	CHECK(secondValue._counter == 1);
 }

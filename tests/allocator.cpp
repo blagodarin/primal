@@ -22,7 +22,7 @@ namespace
 
 	using AllocatorPtr = std::unique_ptr<void, AllocatorDeleter>;
 
-	constexpr size_t kAlignment = 256;
+	constexpr size_t kAlignment = 512;
 
 	using AlignedAllocator = primal::AlignedAllocator<kAlignment>;
 

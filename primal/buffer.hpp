@@ -27,17 +27,33 @@ namespace primal
 		explicit Buffer(size_t size)
 			: _data{ static_cast<T*>(A::allocate(size * sizeof(T))) }, _size{ size } {}
 
+		constexpr Buffer(Buffer&& other) noexcept
+			: _data{ std::move(other._data) }, _size{ other._size } { other._size = 0; }
+
+		constexpr Buffer& operator=(Buffer&& other) noexcept
+		{
+			swap(*this, other);
+			return *this;
+		}
+
 		[[nodiscard]] constexpr T* data() noexcept { return _data; }
 		[[nodiscard]] constexpr const T* data() const noexcept { return _data; }
 		[[nodiscard]] constexpr size_t size() const noexcept { return _size; }
 
-		void resize(size_t newSize, bool copy = true)
+		void reallocate(size_t newSize, bool copy = true)
 		{
 			decltype(_data) newData{ static_cast<T*>(A::allocate(newSize * sizeof(T))) };
 			if (copy && newData && _data) // UBSan requires checking data pointers even if there is nothing to copy.
 				std::memcpy(newData, _data, (newSize < _size ? newSize : _size) * sizeof(T));
 			_data = std::move(newData);
 			_size = newSize;
+		}
+
+		friend constexpr void swap(Buffer& first, Buffer& second) noexcept
+		{
+			using std::swap;
+			swap(first._data, second._data);
+			swap(first._size, second._size);
 		}
 
 	private:

@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <utility>
+
 namespace primal
 {
 	// Smart pointer for working with C APIs.
@@ -23,9 +25,7 @@ namespace primal
 
 		constexpr CPtr& operator=(CPtr&& other) noexcept
 		{
-			const auto pointer = _pointer;
-			_pointer = other._pointer;
-			other._pointer = pointer;
+			swap(*this, other);
 			return *this;
 		}
 
@@ -39,6 +39,12 @@ namespace primal
 		[[nodiscard]] constexpr T* operator->() const noexcept { return _pointer; }
 		[[nodiscard]] constexpr T* get() const noexcept { return _pointer; }
 		[[nodiscard]] constexpr T** out() noexcept { return &_pointer; }
+
+		friend constexpr void swap(CPtr& first, CPtr& second) noexcept
+		{
+			using std::swap;
+			swap(first._pointer, second._pointer);
+		}
 
 	private:
 		T* _pointer = nullptr;
