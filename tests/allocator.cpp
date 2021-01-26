@@ -4,6 +4,8 @@
 
 #include <primal/allocator.hpp>
 
+#include <algorithm>
+#include <cstddef>
 #include <limits>
 #include <memory>
 #include <type_traits>
@@ -12,29 +14,21 @@
 
 namespace
 {
-	struct AllocatorDeleter
+	template <typename A>
+	struct TestAllocator : public A
 	{
-		void operator()(void* pointer) noexcept
-		{
-			primal::Allocator::deallocate(pointer);
-		}
+		void operator()(void* pointer) noexcept { A::deallocate(pointer); }
 	};
 
-	using AllocatorPtr = std::unique_ptr<void, AllocatorDeleter>;
+	using Allocator = TestAllocator<primal::Allocator>;
+	using AllocatorPtr = std::unique_ptr<void, Allocator>;
 
 	constexpr size_t kAlignment = 512;
+	using AlignedAllocator = TestAllocator<primal::AlignedAllocator<kAlignment>>;
+	using AlignedAllocatorPtr = std::unique_ptr<void, AlignedAllocator>;
 
-	using AlignedAllocator = primal::AlignedAllocator<kAlignment>;
-
-	struct AlignedAllocatorDeleter
-	{
-		void operator()(void* pointer) noexcept
-		{
-			AlignedAllocator::deallocate(pointer);
-		}
-	};
-
-	using AlignedAllocatorPtr = std::unique_ptr<void, AlignedAllocatorDeleter>;
+	using CleanAllocator = TestAllocator<primal::CleanAllocator<primal::Allocator>>;
+	using CleanAllocatorPtr = std::unique_ptr<void, CleanAllocator>;
 
 	// GCC issues a warning if the allocation size is known at compile time and exceeds this value.
 	constexpr auto kMaxSize = static_cast<size_t>(std::numeric_limits<std::make_signed_t<size_t>>::max());
@@ -64,4 +58,13 @@ TEST_CASE("AlignedAllocator::allocate(1)")
 TEST_CASE("AlignedAllocator::allocate(SIZE_MAX)")
 {
 	CHECK_THROWS_AS(AlignedAllocatorPtr pointer{ AlignedAllocator::allocate(kMaxSize - kMaxSize % kAlignment) }, std::bad_alloc);
+}
+
+TEST_CASE("CleanAllocator::allocate()")
+{
+	constexpr size_t size = 512;
+	CleanAllocatorPtr pointer{ CleanAllocator::allocate(size) };
+	REQUIRE(pointer);
+	const auto data = reinterpret_cast<std::byte*>(pointer.get());
+	CHECK(data + size == std::find_if(data, data + size, [](std::byte byte) { return std::to_integer<int>(byte) != 0; }));
 }

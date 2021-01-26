@@ -11,22 +11,7 @@
 
 namespace
 {
-	struct CleanAllocator
-	{
-		static void* allocate(size_t size)
-		{
-			const auto result = primal::Allocator::allocate(size);
-			std::memset(result, 0, size);
-			return result;
-		}
-
-		static void deallocate(void* memory) noexcept
-		{
-			primal::Allocator::deallocate(memory);
-		}
-	};
-
-	using Buffer = primal::Buffer<int, CleanAllocator>;
+	using Buffer = primal::Buffer<int, primal::CleanAllocator<primal::Allocator>>;
 
 	void checkData(const Buffer& buffer, const std::vector<int>& expectedData)
 	{

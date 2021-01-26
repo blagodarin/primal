@@ -5,7 +5,6 @@
 #pragma once
 
 #include <cassert>
-#include <cstdlib>
 #include <memory>
 #include <type_traits>
 #include <utility>
@@ -18,14 +17,8 @@ namespace primal
 	{
 	public:
 		constexpr StaticVector() noexcept = default;
-
 		StaticVector(const StaticVector&) = delete;
-
-		~StaticVector() noexcept
-		{
-			clear();
-		}
-
+		~StaticVector() noexcept { clear(); }
 		StaticVector& operator=(const StaticVector&) = delete;
 
 		[[nodiscard]] constexpr T* begin() noexcept { return reinterpret_cast<T*>(_data); }
@@ -69,18 +62,6 @@ namespace primal
 			assert(_size > 0);
 			--_size;
 			std::destroy_at(reinterpret_cast<T*>(_data) + _size);
-		}
-
-		[[nodiscard]] T& operator[](size_t index) noexcept
-		{
-			assert(index < _size);
-			return static_cast<T*>(_data)[index];
-		}
-
-		[[nodiscard]] const T& operator[](size_t index) const noexcept
-		{
-			assert(index < _size);
-			return static_cast<const T*>(_data)[index];
 		}
 
 	private:

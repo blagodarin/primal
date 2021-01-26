@@ -8,6 +8,7 @@
 
 #include <bit>
 #include <cstdlib>
+#include <cstring>
 #include <new>
 
 namespace primal
@@ -15,7 +16,7 @@ namespace primal
 	class Allocator
 	{
 	public:
-		static void* allocate(size_t size)
+		[[nodiscard]] static void* allocate(size_t size)
 		{
 			if (const auto memory = std::malloc(size); memory)
 				PRIMAL_LIKELY return memory;
@@ -34,7 +35,7 @@ namespace primal
 	public:
 		static_assert(std::has_single_bit(kAlignment));
 
-		static void* allocate(size_t size)
+		[[nodiscard]] static void* allocate(size_t size)
 		{
 			constexpr auto kAlignmentMask = kAlignment - 1;
 			const auto alignedSize = (size + kAlignmentMask) & ~kAlignmentMask;
@@ -54,6 +55,23 @@ namespace primal
 #else
 			std::free(memory);
 #endif
+		}
+	};
+
+	template <typename A>
+	class CleanAllocator
+	{
+	public:
+		[[nodiscard]] static void* allocate(size_t size)
+		{
+			const auto memory = A::allocate(size);
+			std::memset(memory, 0, size);
+			return memory;
+		}
+
+		static void deallocate(void* memory) noexcept
+		{
+			A::deallocate(memory);
 		}
 	};
 }
