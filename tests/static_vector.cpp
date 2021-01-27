@@ -10,28 +10,43 @@
 
 namespace
 {
-	constexpr size_t kCapacity = 3;
+	using StaticVector = primal::StaticVector<int, 2>;
 
-	using StaticVector = primal::StaticVector<int, kCapacity>;
-
-	void check(const StaticVector& vector, const std::vector<int>& expected)
+	void check(StaticVector& vector, const std::vector<int>& expected)
 	{
 		CHECK(vector.empty() == expected.empty());
 		CHECK(vector.size() == expected.size());
 		auto it = vector.begin();
-		auto cit = vector.begin();
+		auto cit = vector.cbegin();
+		auto data = vector.data();
+		CHECK(data);
+		CHECK(std::as_const(vector).begin() == cit);
+		CHECK(std::as_const(vector).data() == data);
 		for (size_t index = 0; index < expected.size(); ++index)
 		{
 			INFO('[', index, ']');
 			REQUIRE(it < vector.end());
 			REQUIRE(cit < vector.cend());
-			CHECK(*it == expected[index]);
-			CHECK(*cit == expected[index]);
+			REQUIRE(data);
+			const auto value = expected[index];
+			CHECK(*it == value);
+			CHECK(*cit == value);
+			CHECK(*data == value);
+			CHECK(vector[index] == value);
+			CHECK(std::as_const(vector)[index] == value);
 			++it;
 			++cit;
+			++data;
 		}
-		REQUIRE(it == vector.end());
-		REQUIRE(cit == vector.cend());
+		CHECK(vector.end() == it);
+		CHECK(vector.cend() == cit);
+		CHECK(std::as_const(vector).end() == cit);
+		if (!expected.empty())
+		{
+			const auto value = expected.back();
+			CHECK(vector.back() == value);
+			CHECK(std::as_const(vector).back() == value);
+		}
 	}
 }
 
@@ -39,13 +54,28 @@ TEST_CASE("StaticVector")
 {
 	StaticVector vector;
 	::check(vector, {});
-	vector.emplace_back(1);
-	::check(vector, { 1 });
-	vector.emplace_back(2);
-	vector.emplace_back(3);
-	::check(vector, { 1, 2, 3 });
-	vector.pop_back();
-	::check(vector, { 1, 2 });
-	vector.clear();
-	::check(vector, {});
+	SUBCASE("clear()")
+	{
+		vector.clear();
+		::check(vector, {});
+	}
+	SUBCASE("emplace_back()")
+	{
+		vector.emplace_back(1);
+		::check(vector, { 1 });
+		vector.emplace_back(2);
+		::check(vector, { 1, 2 });
+		SUBCASE("clear()")
+		{
+			vector.clear();
+			::check(vector, {});
+		}
+		SUBCASE("pop_back()")
+		{
+			vector.pop_back();
+			::check(vector, { 1 });
+			vector.pop_back();
+			::check(vector, {});
+		}
+	}
 }

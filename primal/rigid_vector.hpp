@@ -22,8 +22,8 @@ namespace primal
 	{
 	public:
 		constexpr RigidVector() noexcept = default;
-
 		RigidVector(const RigidVector&) = delete;
+		RigidVector& operator=(const RigidVector&) = delete;
 
 		constexpr RigidVector(RigidVector&& other) noexcept
 			: _data(std::exchange(other._data, nullptr))
@@ -40,15 +40,9 @@ namespace primal
 			A::deallocate(_data);
 		}
 
-		RigidVector& operator=(const RigidVector&) = delete;
-
 		constexpr RigidVector& operator=(RigidVector&& other) noexcept
 		{
-			std::swap(_data, other._data);
-			std::swap(_size, other._size);
-#ifndef NDEBUG
-			std::swap(_capacity, other._capacity);
-#endif
+			swap(*this, other);
 			return *this;
 		}
 
@@ -116,6 +110,16 @@ namespace primal
 		{
 			assert(index < _size);
 			return _data[index];
+		}
+
+		friend constexpr void swap(RigidVector& first, RigidVector& second) noexcept
+		{
+			using std::swap;
+			swap(first._data, second._data);
+			swap(first._size, second._size);
+#ifndef NDEBUG
+			swap(first._capacity, second._capacity);
+#endif
 		}
 
 	private:

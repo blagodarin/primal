@@ -25,6 +25,8 @@ namespace primal
 		[[nodiscard]] constexpr const T* begin() const noexcept { return reinterpret_cast<const T*>(_data); }
 		[[nodiscard]] constexpr const T* cbegin() const noexcept { return reinterpret_cast<const T*>(_data); }
 		[[nodiscard]] constexpr const T* cend() const noexcept { return reinterpret_cast<const T*>(_data + _size); }
+		[[nodiscard]] constexpr T* data() noexcept { return reinterpret_cast<T*>(_data); }
+		[[nodiscard]] constexpr const T* data() const noexcept { return reinterpret_cast<const T*>(_data); }
 		[[nodiscard]] constexpr bool empty() const noexcept { return !_size; }
 		[[nodiscard]] constexpr T* end() noexcept { return reinterpret_cast<T*>(_data + _size); }
 		[[nodiscard]] constexpr const T* end() const noexcept { return reinterpret_cast<const T*>(_data + _size); }
@@ -62,6 +64,18 @@ namespace primal
 			assert(_size > 0);
 			--_size;
 			std::destroy_at(reinterpret_cast<T*>(_data) + _size);
+		}
+
+		[[nodiscard]] T& operator[](size_t index) noexcept
+		{
+			assert(index < _size);
+			return reinterpret_cast<T*>(_data)[index];
+		}
+
+		[[nodiscard]] const T& operator[](size_t index) const noexcept
+		{
+			assert(index < _size);
+			return reinterpret_cast<const T*>(_data)[index];
 		}
 
 	private:
