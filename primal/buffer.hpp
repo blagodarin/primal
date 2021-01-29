@@ -5,7 +5,7 @@
 #pragma once
 
 #include <primal/allocator.hpp>
-#include <primal/c_ptr.hpp>
+#include <primal/smart_ptr.hpp>
 
 #include <cstring>
 #include <memory>

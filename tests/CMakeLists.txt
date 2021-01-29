@@ -5,12 +5,12 @@
 add_executable(primal_tests
 	allocator.cpp
 	buffer.cpp
-	c_ptr.cpp
 	compatibility.cpp
 	fixed.cpp
 	intrinsics.cpp
 	main.cpp
 	rigid_vector.cpp
+	smart_ptr.cpp
 	static_vector.cpp
 	)
 target_include_directories(primal_tests PRIVATE ${PROJECT_BINARY_DIR})

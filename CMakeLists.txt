@@ -51,9 +51,12 @@ endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	add_compile_options(/Wall /WX
-		/wd4514 # 'function' : unreferenced inline function has been removed
-		/wd4710 # 'function' : function not inlined
-		/wd4711 # function 'function' selected for inline expansion
+		/wd4514 # unreferenced inline function has been removed
+		/wd4623 # default constructor was implicitly defined as deleted
+		/wd4625 # copy constructor was implicitly defined as deleted
+		/wd4626 # assignment operator was implicitly defined as deleted
+		/wd4710 # function not inlined
+		/wd4711 # function selected for automatic inline expansion
 		/wd4738 # storing 32-bit float result in memory, possible loss of performance
 		/wd4820 # 'bytes' bytes padding added after construct 'member_name'
 		/wd5045 # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
@@ -66,11 +69,11 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
 	target_sources(primal PRIVATE
 		primal/allocator.hpp
 		primal/buffer.hpp
-		primal/c_ptr.hpp
 		primal/compatibility.hpp
 		primal/fixed.hpp
 		primal/intrinsics.hpp
 		primal/rigid_vector.hpp
+		primal/smart_ptr.hpp
 		primal/static_vector.hpp
 		)
 endif()
