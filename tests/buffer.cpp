@@ -13,77 +13,75 @@ namespace
 {
 	using Buffer = primal::Buffer<int, primal::CleanAllocator<primal::Allocator>>;
 
-	void checkData(const Buffer& buffer, const std::vector<int>& expectedData)
+	void check(Buffer& buffer, const std::vector<int>& expected, bool allocated = true)
 	{
-		CHECK(buffer.size() == expectedData.size());
-		if (!expectedData.empty())
+		CHECK(buffer.size() == expected.size());
+		auto data = buffer.data();
+		CHECK(std::as_const(buffer).data() == data);
+		if (!expected.empty())
 		{
-			REQUIRE(buffer.data());
+			REQUIRE(data);
 			for (size_t i = 0; i < buffer.size(); ++i)
 			{
 				INFO('[', i, ']');
-				CHECK(buffer.data()[i] == expectedData[i]);
+				CHECK(data[i] == expected[i]);
 			}
 		}
-	}
-
-	void checkNull(const Buffer& buffer)
-	{
-		CHECK(!buffer.data());
-		CHECK(buffer.size() == 0);
+		else if (!allocated)
+			CHECK_FALSE(data);
 	}
 }
 
 TEST_CASE("Buffer::Buffer(0)")
 {
 	Buffer buffer{ 0 };
-	::checkData(buffer, {});
+	::check(buffer, {});
 }
 
 TEST_CASE("Buffer::Buffer(Buffer&&)")
 {
 	Buffer buffer{ 3 };
-	::checkData(buffer, { 0, 0, 0 });
+	::check(buffer, { 0, 0, 0 });
 	std::iota(buffer.data(), buffer.data() + buffer.size(), 1);
 	Buffer otherBuffer{ std::move(buffer) };
-	::checkNull(buffer);
-	::checkData(otherBuffer, { 1, 2, 3 });
+	::check(buffer, {}, false);
+	::check(otherBuffer, { 1, 2, 3 });
 }
 
 TEST_CASE("Buffer::operator=(Buffer&&)")
 {
 	Buffer buffer{ 3 };
-	::checkData(buffer, { 0, 0, 0 });
+	::check(buffer, { 0, 0, 0 });
 	std::iota(buffer.data(), buffer.data() + buffer.size(), 1);
 	Buffer otherBuffer;
-	::checkNull(otherBuffer);
+	::check(otherBuffer, {}, false);
 	otherBuffer = std::move(buffer);
-	::checkNull(buffer);
-	::checkData(otherBuffer, { 1, 2, 3 });
+	::check(buffer, {}, true);
+	::check(otherBuffer, { 1, 2, 3 });
 }
 
 TEST_CASE("Buffer::reallocate()")
 {
 	Buffer buffer;
-	::checkNull(buffer);
+	::check(buffer, {}, false);
 	buffer.reallocate(3);
-	::checkData(buffer, { 0, 0, 0 });
+	::check(buffer, { 0, 0, 0 });
 	std::iota(buffer.data(), buffer.data() + buffer.size(), 1);
 	buffer.reallocate(4);
-	::checkData(buffer, { 1, 2, 3, 0 });
+	::check(buffer, { 1, 2, 3, 0 });
 	buffer.reallocate(5, false);
-	::checkData(buffer, { 0, 0, 0, 0, 0 });
+	::check(buffer, { 0, 0, 0, 0, 0 });
 }
 
 TEST_CASE("swap(Buffer&, Buffer&)")
 {
 	Buffer first{ 3 };
-	::checkData(first, { 0, 0, 0 });
+	::check(first, { 0, 0, 0 });
 	std::iota(first.data(), first.data() + first.size(), 1);
 	Buffer second{ 4 };
-	::checkData(second, { 0, 0, 0, 0 });
+	::check(second, { 0, 0, 0, 0 });
 	std::iota(second.data(), second.data() + second.size(), 4);
 	swap(first, second);
-	::checkData(first, { 4, 5, 6, 7 });
-	::checkData(second, { 1, 2, 3 });
+	::check(first, { 4, 5, 6, 7 });
+	::check(second, { 1, 2, 3 });
 }
