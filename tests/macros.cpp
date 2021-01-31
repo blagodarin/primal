@@ -2,4 +2,8 @@
 // Copyright (C) Sergei Blagodarin.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <primal/compatibility.hpp>
+#include <primal/macros.hpp>
+
+#if PRIMAL_JOIN(1, 0) != 10
+#	error
+#endif

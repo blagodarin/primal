@@ -69,10 +69,11 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
 	target_sources(primal PRIVATE
 		primal/allocator.hpp
 		primal/buffer.hpp
-		primal/compatibility.hpp
 		primal/fixed.hpp
 		primal/intrinsics.hpp
+		primal/macros.hpp
 		primal/rigid_vector.hpp
+		primal/scope.hpp
 		primal/smart_ptr.hpp
 		primal/static_vector.hpp
 		)

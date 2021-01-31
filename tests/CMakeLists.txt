@@ -5,11 +5,12 @@
 add_executable(primal_tests
 	allocator.cpp
 	buffer.cpp
-	compatibility.cpp
 	fixed.cpp
 	intrinsics.cpp
+	macros.cpp
 	main.cpp
 	rigid_vector.cpp
+	scope.cpp
 	smart_ptr.cpp
 	static_vector.cpp
 	)

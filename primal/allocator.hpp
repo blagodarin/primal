@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <primal/compatibility.hpp>
+#include <primal/macros.hpp>
 
 #include <bit>
 #include <cstdlib>

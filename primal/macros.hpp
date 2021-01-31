@@ -4,6 +4,9 @@
 
 #pragma once
 
+#define PRIMAL_JOIN_(left, right) left##right
+#define PRIMAL_JOIN(left, right) PRIMAL_JOIN_(left, right)
+
 // [[likely]] and [[unlikely]] require Clang 12.
 #if __has_cpp_attribute(likely) && __has_cpp_attribute(unlikely)
 #	define PRIMAL_LIKELY [[likely]]
