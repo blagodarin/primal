@@ -4,10 +4,6 @@
 
 cmake_minimum_required(VERSION 3.15)
 
-if(DEFINED PROJECT_NAME)
-	set(PRIMAL_SUBPROJECT ON)
-endif()
-
 project(Primal LANGUAGES CXX)
 
 include(cmake/PrimalUtils.cmake)
