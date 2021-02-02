@@ -8,11 +8,9 @@ project(Primal LANGUAGES CXX)
 
 include(cmake/PrimalUtils.cmake)
 
-primal_defaults()
+primal_set_defaults()
 
-if(NOT PRIMAL_SUBPROJECT)
-	option(PRIMAL_TESTS "Build Primal tests" OFF)
-endif()
+option(PRIMAL_TESTS "Build Primal tests" OFF)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -76,7 +74,7 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
 endif()
 primal_install(primal EXPORT PrimalTargets)
 
-if(NOT PRIMAL_SUBPROJECT AND PRIMAL_TESTS)
+if(PRIMAL_TESTS)
 	enable_testing()
 	primal_download("https://raw.githubusercontent.com/onqtam/doctest/2.4.4/doctest/doctest.h" SHA1 "7c25b870f3e0cde6d6c8596c60f3592fe557989a")
 	add_subdirectory(tests)
