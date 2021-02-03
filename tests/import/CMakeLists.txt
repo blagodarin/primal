@@ -5,7 +5,6 @@
 cmake_minimum_required(VERSION 3.12)
 project(PrimalImport LANGUAGES CXX)
 find_package(Primal REQUIRED)
-primal_defaults()
+primal_set_defaults()
 add_executable(primal_import main.cpp)
 target_link_libraries(primal_import PRIVATE Primal::primal)
-set_property(TARGET primal_import PROPERTY CXX_STANDARD 20)

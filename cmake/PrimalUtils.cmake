@@ -75,6 +75,7 @@ function(primal_set_defaults)
 		set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ".cmake")
 		set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 	endif()
+	set(CMAKE_CXX_STANDARD 20 PARENT_SCOPE)
 endfunction()
 
 function(primal_set_folder _folder)

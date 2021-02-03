@@ -12,8 +12,6 @@ primal_set_defaults()
 
 option(PRIMAL_TESTS "Build Primal tests" OFF)
 
-set(CMAKE_CXX_STANDARD 20)
-
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	add_compile_options(-Werror -Weverything
 		-Wno-c++98-compat
