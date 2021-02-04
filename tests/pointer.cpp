@@ -2,7 +2,7 @@
 // Copyright (C) Sergei Blagodarin.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <primal/smart_ptr.hpp>
+#include <primal/pointer.hpp>
 
 #include <cstdint>
 
@@ -127,7 +127,7 @@ TEST_CASE("CPtr")
 
 TEST_CASE("TaggedPtr")
 {
-	using TaggedPtr = primal::SmartPtr<Value, TaggedDeleter>;
+	using TaggedPtr = primal::Pointer<Value, TaggedDeleter>;
 
 	const auto check = [](TaggedPtr& ptr, Value* raw, intptr_t tag) {
 		if (raw)

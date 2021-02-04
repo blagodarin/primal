@@ -2,7 +2,7 @@
 // Copyright (C) Sergei Blagodarin.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <primal/smart_ptr.hpp>
+#include <primal/pointer.hpp>
 
 int main()
 {

@@ -9,22 +9,22 @@
 namespace primal
 {
 	template <typename T, typename Deleter>
-	class SmartPtr : private Deleter
+	class Pointer : private Deleter
 	{
 	public:
-		constexpr SmartPtr() noexcept = default;
-		SmartPtr(const SmartPtr&) = delete;
-		~SmartPtr() noexcept { Deleter::free(_pointer); }
-		SmartPtr& operator=(const SmartPtr&) = delete;
+		constexpr Pointer() noexcept = default;
+		Pointer(const Pointer&) = delete;
+		~Pointer() noexcept { Deleter::free(_pointer); }
+		Pointer& operator=(const Pointer&) = delete;
 
 		template <typename... DeleterArgs>
-		constexpr explicit SmartPtr(T* pointer, DeleterArgs&&... args) noexcept
+		constexpr explicit Pointer(T* pointer, DeleterArgs&&... args) noexcept
 			: Deleter{ std::forward<DeleterArgs>(args)... }, _pointer{ pointer } {}
 
-		constexpr SmartPtr(SmartPtr&& other) noexcept
+		constexpr Pointer(Pointer&& other) noexcept
 			: Deleter{ static_cast<Deleter&&>(other) }, _pointer{ std::exchange(other._pointer, nullptr) } {}
 
-		constexpr SmartPtr& operator=(SmartPtr&& other) noexcept
+		constexpr Pointer& operator=(Pointer&& other) noexcept
 		{
 			swap(*this, other);
 			return *this;
@@ -44,10 +44,10 @@ namespace primal
 			}
 		}
 
-		friend constexpr void swap(SmartPtr& first, SmartPtr& second) noexcept
+		friend constexpr void swap(Pointer& first, Pointer& second) noexcept
 		{
 			using std::swap;
-			if constexpr (sizeof(SmartPtr) > sizeof(void*))
+			if constexpr (sizeof(Pointer) > sizeof(void*))
 				swap(static_cast<Deleter&>(first), static_cast<Deleter&>(second));
 			swap(first._pointer, second._pointer);
 		}
@@ -70,5 +70,5 @@ namespace primal
 
 	// Smart pointer for working with C APIs.
 	template <typename T, auto deleter>
-	using CPtr = SmartPtr<T, FunctionDeleter<deleter>>;
+	using CPtr = Pointer<T, FunctionDeleter<deleter>>;
 }

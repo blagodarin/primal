@@ -9,9 +9,9 @@ add_executable(primal_tests
 	intrinsics.cpp
 	macros.cpp
 	main.cpp
+	pointer.cpp
 	rigid_vector.cpp
 	scope.cpp
-	smart_ptr.cpp
 	static_vector.cpp
 	)
 target_include_directories(primal_tests PRIVATE ${PROJECT_BINARY_DIR})
