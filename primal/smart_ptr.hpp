@@ -35,6 +35,15 @@ namespace primal
 		[[nodiscard]] constexpr T* get() const noexcept { return _pointer; }
 		[[nodiscard]] constexpr T** out() noexcept { return &_pointer; }
 
+		void reset(T* pointer = nullptr) noexcept
+		{
+			if (_pointer != pointer)
+			{
+				Deleter::free(_pointer);
+				_pointer = pointer;
+			}
+		}
+
 		friend constexpr void swap(SmartPtr& first, SmartPtr& second) noexcept
 		{
 			using std::swap;

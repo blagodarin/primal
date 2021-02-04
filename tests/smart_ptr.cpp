@@ -56,6 +56,7 @@ TEST_CASE("CPtr")
 		{
 			REQUIRE(ptr);
 			CHECK(&ptr->_counter == &raw->_counter);
+			CHECK(&ptr[0]._counter == &raw->_counter);
 		}
 		else
 			CHECK_FALSE(ptr);
@@ -87,6 +88,23 @@ TEST_CASE("CPtr")
 			check(otherPtr, &value);
 			CHECK(value._counter == 0);
 		}
+		SUBCASE("reset()")
+		{
+			ptr.reset();
+			check(ptr, nullptr);
+			CHECK(value._counter == 1);
+		}
+		SUBCASE("reset(T*)")
+		{
+			ptr.reset(&otherValue);
+			check(ptr, &otherValue);
+			CHECK(value._counter == 1);
+			CHECK(otherValue._counter == 0);
+			ptr.reset(&otherValue);
+			check(ptr, &otherValue);
+			CHECK(otherValue._counter == 0);
+			expectedOtherValue = 1;
+		}
 		SUBCASE("swap()")
 		{
 			{
@@ -116,6 +134,7 @@ TEST_CASE("TaggedPtr")
 		{
 			REQUIRE(ptr);
 			CHECK(&ptr->_counter == &raw->_counter);
+			CHECK(&ptr[0]._counter == &raw->_counter);
 		}
 		else
 			CHECK_FALSE(ptr);
@@ -147,6 +166,23 @@ TEST_CASE("TaggedPtr")
 			check(ptr, nullptr, 2);
 			check(otherPtr, &value, 1);
 			CHECK(value._counter == 0);
+		}
+		SUBCASE("reset()")
+		{
+			ptr.reset();
+			check(ptr, nullptr, 1);
+			CHECK(value._counter == 1);
+		}
+		SUBCASE("reset(T*)")
+		{
+			ptr.reset(&otherValue);
+			check(ptr, &otherValue, 1);
+			CHECK(value._counter == 1);
+			CHECK(otherValue._counter == 0);
+			ptr.reset(&otherValue);
+			check(ptr, &otherValue, 1);
+			CHECK(otherValue._counter == 0);
+			expectedOtherValue = 1;
 		}
 		SUBCASE("swap()")
 		{
