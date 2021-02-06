@@ -16,5 +16,5 @@ add_executable(primal_tests
 	)
 target_include_directories(primal_tests PRIVATE ${PROJECT_BINARY_DIR})
 target_link_libraries(primal_tests PRIVATE primal)
-primal_set_properties(primal_tests STANDALONE ON)
+set_target_properties(primal_tests PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 add_test(NAME primal COMMAND primal_tests)
