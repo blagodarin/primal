@@ -14,7 +14,7 @@ add_executable(primal_tests
 	scope.cpp
 	static_vector.cpp
 	)
-target_include_directories(primal_tests PRIVATE ${PROJECT_BINARY_DIR})
+target_include_directories(primal_tests PRIVATE ${CMAKE_BINARY_DIR})
 target_link_libraries(primal_tests PRIVATE primal)
 set_target_properties(primal_tests PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 add_test(NAME primal COMMAND primal_tests)
