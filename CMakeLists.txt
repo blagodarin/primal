@@ -2,13 +2,17 @@
 # Copyright (C) Sergei Blagodarin.
 # SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.19)
 
 project(Primal LANGUAGES CXX)
 
 include(cmake/PrimalUtils.cmake)
 
 primal_set_defaults()
+
+if(PRIMAL_SUBPROJECT)
+	include(cmake/PrimalPackages.cmake)
+endif()
 
 option(PRIMAL_TESTS "Build Primal tests" OFF)
 
@@ -82,5 +86,6 @@ include(CMakePackageConfigHelpers)
 configure_package_config_file(cmake/PrimalConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/PrimalConfig.cmake INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Primal)
 write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/PrimalConfigVersion.cmake VERSION 0.0.0 COMPATIBILITY AnyNewerVersion)
 install(DIRECTORY primal DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/PrimalConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/PrimalConfigVersion.cmake cmake/PrimalUtils.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Primal)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/PrimalConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/PrimalConfigVersion.cmake cmake/PrimalUtils.cmake cmake/PrimalPackages.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Primal)
+install(DIRECTORY cmake/PrimalPackages DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Primal)
 install(EXPORT PrimalTargets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Primal NAMESPACE Primal::)

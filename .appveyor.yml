@@ -22,7 +22,8 @@ environment:
       GENERATOR: Ninja
 
 cache:
-  - .build\doctest.h
+  - .build\_PrimalDownloads
+  - .build-import\_PrimalDownloads
 
 install:
   - if "%GENERATOR%"=="MSVS" (set CMAKE_GENERATOR=Visual Studio 16 2019) else (set CMAKE_GENERATOR=%GENERATOR%)

@@ -1,4 +1,5 @@
 @PACKAGE_INIT@
 include("${CMAKE_CURRENT_LIST_DIR}/PrimalTargets.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/PrimalUtils.cmake")
 check_required_components(Primal)
+include("${CMAKE_CURRENT_LIST_DIR}/PrimalUtils.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/PrimalPackages.cmake")

@@ -4,6 +4,9 @@
 
 #include <primal/pointer.hpp>
 
+#include <cstdio> // Required by <jpeglib.h>.
+#include <jpeglib.h>
+
 int main()
 {
 }
