@@ -12,9 +12,9 @@ primal_set_defaults()
 
 if(PRIMAL_SUBPROJECT)
 	include(cmake/PrimalPackages.cmake)
+else()
+	option(PRIMAL_TESTS "Build Primal tests" OFF)
 endif()
-
-option(PRIMAL_TESTS "Build Primal tests" OFF)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	add_compile_options(-Werror -Weverything
