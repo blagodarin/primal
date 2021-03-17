@@ -4,9 +4,9 @@
 
 #include <primal/pointer.hpp>
 
-#include <cstdio> // Required by <jpeglib.h>.
-#include <jpeglib.h>
+#include <fmt/format.h>
 
 int main()
 {
+	fmt::print("Hello, {}!", "world");
 }

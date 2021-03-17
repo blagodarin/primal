@@ -62,6 +62,7 @@ function(_primal_cmake _source_dir _build_dir _install_dir)
 	endif()
 endfunction()
 
+include(${CMAKE_CURRENT_LIST_DIR}/PrimalPackages/fmt.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/PrimalPackages/freetype.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/PrimalPackages/jpeg.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/PrimalPackages/nasm.cmake)
