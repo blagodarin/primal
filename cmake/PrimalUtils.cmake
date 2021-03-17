@@ -124,7 +124,7 @@ function(primal_set_defaults)
 		set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 	endif()
 	set(CMAKE_CXX_STANDARD 20 PARENT_SCOPE)
-	set(CMAKE_MAP_IMPORTED_CONFIG_DEBUG "Debug;" PARENT_SCOPE)
+	set(CMAKE_MAP_IMPORTED_CONFIG_DEBUG "Debug;;Release" PARENT_SCOPE) # "Release" may be the only configuration provided by the host system.
 	set(CMAKE_MAP_IMPORTED_CONFIG_MINSIZEREL "MinSizeRel;Release;RelWithDebInfo;" PARENT_SCOPE)
 	set(CMAKE_MAP_IMPORTED_CONFIG_RELEASE "Release;RelWithDebInfo;MinSizeRel;" PARENT_SCOPE)
 	set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO "RelWithDebInfo;Release;MinSizeRel;" PARENT_SCOPE)
