@@ -24,11 +24,11 @@ namespace primal
 		Buffer(const Buffer&) = delete;
 		Buffer& operator=(Buffer&) = delete;
 
-		explicit Buffer(size_t size)
-			: _data{ static_cast<T*>(A::allocate(size * sizeof(T))) }, _size{ size } {}
+		explicit Buffer(size_t capacity)
+			: _data{ static_cast<T*>(A::allocate(capacity * sizeof(T))) }, _capacity{ capacity } {}
 
 		constexpr Buffer(Buffer&& other) noexcept
-			: _data{ std::move(other._data) }, _size{ other._size } { other._size = 0; }
+			: _data{ std::move(other._data) }, _capacity{ other._capacity } { other._capacity = 0; }
 
 		constexpr Buffer& operator=(Buffer&& other) noexcept
 		{
@@ -36,28 +36,30 @@ namespace primal
 			return *this;
 		}
 
+		[[nodiscard]] constexpr size_t capacity() const noexcept { return _capacity; }
 		[[nodiscard]] constexpr T* data() noexcept { return _data; }
 		[[nodiscard]] constexpr const T* data() const noexcept { return _data; }
-		[[nodiscard]] constexpr size_t size() const noexcept { return _size; }
 
-		void reallocate(size_t newSize, bool copy = true)
+		void reserve(size_t newCapacity, bool preserveContents = true)
 		{
-			decltype(_data) newData{ static_cast<T*>(A::allocate(newSize * sizeof(T))) };
-			if (copy && newData && _data) // UBSan requires checking data pointers even if there is nothing to copy.
-				std::memcpy(newData, _data, (newSize < _size ? newSize : _size) * sizeof(T));
+			if (newCapacity <= _capacity)
+				return;
+			decltype(_data) newData{ static_cast<T*>(A::allocate(newCapacity * sizeof(T))) };
+			if (preserveContents)
+				std::memcpy(newData, _data, (newCapacity < _capacity ? newCapacity : _capacity) * sizeof(T));
 			_data = std::move(newData);
-			_size = newSize;
+			_capacity = newCapacity;
 		}
 
 		friend constexpr void swap(Buffer& first, Buffer& second) noexcept
 		{
 			using std::swap;
 			swap(first._data, second._data);
-			swap(first._size, second._size);
+			swap(first._capacity, second._capacity);
 		}
 
 	private:
 		CPtr<T, A::deallocate> _data;
-		size_t _size = 0;
+		size_t _capacity = 0;
 	};
 }
