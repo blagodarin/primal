@@ -4,6 +4,8 @@
 
 #include <primal/wildcard.hpp>
 
+#include <string>
+
 #include <doctest.h>
 
 namespace
