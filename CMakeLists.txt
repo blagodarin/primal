@@ -81,7 +81,7 @@ primal_install(primal EXPORT PrimalTargets)
 
 if(PRIMAL_TESTS)
 	enable_testing()
-	primal_download("https://raw.githubusercontent.com/onqtam/doctest/2.4.4/doctest/doctest.h" SHA1 "7c25b870f3e0cde6d6c8596c60f3592fe557989a")
+	primal_download("https://raw.githubusercontent.com/onqtam/doctest/2.4.6/doctest/doctest.h" SHA1 "40728d2bed7f074e80cb095844820114e7d16ce0")
 	add_subdirectory(tests)
 endif()
 

@@ -12,10 +12,10 @@ function(primal_provide_fmt _output)
 	else()
 		set(_patch "")
 	endif()
-	set(_version "7.1.3")
+	set(_version "8.0.1")
 	set(_package "fmt-${_version}")
-	primal_download("https://github.com/fmtlib/fmt/releases/download/7.1.3/fmt-7.1.3.zip"
-		SHA1 "883eb4c160b906217c859d4cd882564edbd0b24d"
+	primal_download("https://github.com/fmtlib/fmt/releases/download/${_version}/${_package}.zip"
+		SHA1 "68564915fb9e912f59eaa54575d878902f90295f"
 		EXTRACT_DIR "${_package}"
 		PATCH ${_patch}
 		RESULT _downloaded)
