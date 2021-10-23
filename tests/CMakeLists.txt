@@ -15,6 +15,7 @@ add_executable(primal_tests
 	scope.cpp
 	static_vector.cpp
 	utf8.cpp
+	wildcard.cpp
 	)
 target_include_directories(primal_tests PRIVATE ${PRIMAL_DOWNLOAD_DIR})
 target_link_libraries(primal_tests PRIVATE primal)
