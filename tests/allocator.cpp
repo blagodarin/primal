@@ -23,7 +23,7 @@ namespace
 	using Allocator = TestAllocator<primal::Allocator>;
 	using AllocatorPtr = std::unique_ptr<void, Allocator>;
 
-	constexpr size_t kAlignment = 1024;
+	constexpr size_t kAlignment = 16'384;
 	using AlignedAllocator = TestAllocator<primal::AlignedAllocator<kAlignment>>;
 	using AlignedAllocatorPtr = std::unique_ptr<void, AlignedAllocator>;
 

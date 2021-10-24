@@ -9,12 +9,12 @@
 
 namespace primal
 {
-	constexpr bool isUtf8Continuation(char c) noexcept
+	[[nodiscard]] constexpr bool isUtf8Continuation(char c) noexcept
 	{
 		return (static_cast<unsigned char>(c) & 0b1100'0000u) == 0b1000'0000u;
 	}
 
-	constexpr char32_t readUtf8(std::string_view text, size_t& offset) noexcept
+	[[nodiscard]] constexpr char32_t readUtf8(std::string_view text, size_t& offset) noexcept
 	{
 		const auto part1 = static_cast<std::uint8_t>(text[offset++]);
 		if (!(part1 & 0b1000'0000))
@@ -41,7 +41,7 @@ namespace primal
 		return ((part1 & 0b0000'0111u) << 18) + (part2 << 12) + (part3 << 6) + part4;
 	}
 
-	constexpr size_t writeUtf8(std::array<char, 4>& buffer, char32_t codepoint) noexcept
+	[[nodiscard]] constexpr size_t writeUtf8(std::array<char, 4>& buffer, char32_t codepoint) noexcept
 	{
 		if (codepoint <= 0x7f)
 		{

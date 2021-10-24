@@ -8,7 +8,7 @@
 
 namespace primal
 {
-	constexpr bool matchWildcard(std::string_view text, std::string_view wildcard) noexcept
+	[[nodiscard]] constexpr bool matchWildcard(std::string_view text, std::string_view wildcard) noexcept
 	{
 		auto t = text.begin();
 		auto w = wildcard.begin();

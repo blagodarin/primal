@@ -8,17 +8,12 @@
 
 #include <doctest.h>
 
-namespace
-{
-	// To prevent compile time evaluation.
-	bool matchWildcard(const std::string& text, const std::string& wildcard)
-	{
-		return primal::matchWildcard(text, wildcard);
-	}
-}
-
 TEST_CASE("matchWildcard")
 {
+	// To prevent compile time evaluation.
+	const auto matchWildcard = [](const std::string& text, const std::string& wildcard) {
+		return primal::matchWildcard(text, wildcard);
+	};
 	SUBCASE("a")
 	{
 		CHECK(matchWildcard("", ""));
@@ -56,5 +51,16 @@ TEST_CASE("matchWildcard")
 		CHECK(matchWildcard("abc", "*abc"));
 		CHECK(!matchWildcard("abc", "bc*"));
 		CHECK(!matchWildcard("abc", "*ab"));
+	}
+	SUBCASE("abc*def*fgh")
+	{
+		using namespace std::string_literals;
+		CHECK(matchWildcard("abc"s + "def" + "fgh", "abc*def*fgh"));
+		CHECK(matchWildcard("abc"s + "xyz" + "def" + "xyz" + "fgh", "abc*def*fgh"));
+		CHECK(matchWildcard("abc"s + "de" + "def" + "fgh", "abc*def*fgh"));
+		CHECK(matchWildcard("abc"s + "def" + "def" + "fgh", "abc*def*fgh"));
+		CHECK(matchWildcard("abc"s + "def" + "fgh" + "fgh", "abc*def*fgh"));
+		CHECK(!matchWildcard("abc"s + "de" + "fgh", "abc*def*fgh"));
+		CHECK(!matchWildcard("abc"s + "def" + "fgh" + "xyz", "abc*def*fgh"));
 	}
 }

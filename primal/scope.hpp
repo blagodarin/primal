@@ -27,7 +27,7 @@ namespace primal
 	};
 
 	template <typename Callback>
-	auto makeFinally(Callback&& callback) noexcept
+	[[nodiscard]] auto makeFinally(Callback&& callback) noexcept
 	{
 		return Finally<Callback>{ std::forward<Callback>(callback) };
 	}
