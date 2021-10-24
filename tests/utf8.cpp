@@ -21,59 +21,57 @@ TEST_CASE("isUtf8Continuation")
 
 TEST_CASE("readUtf8")
 {
-	const auto readUtf8 = [](const std::string& string) -> std::pair<char32_t, size_t> {
+	const auto check = [](const std::string& string, char32_t expectedCodepoint, size_t expectedAdvance) {
 		const std::string garbage{ '\xff' };
 		auto offset = garbage.size();
 		const auto codepoint = primal::readUtf8(garbage + string, offset);
-		return { codepoint, offset - garbage.size() };
+		CHECK(static_cast<uint32_t>(codepoint) == static_cast<uint32_t>(expectedCodepoint));
+		CHECK(offset - garbage.size() == expectedAdvance);
 	};
-	SUBCASE("01")
+	SUBCASE("empty")
 	{
-		const auto [codepoint, advance] = readUtf8("\x01");
-		CHECK(codepoint == 0x01);
-		CHECK(advance == 1);
+		check("", 0, 0);
 	}
-	SUBCASE("7f")
+	SUBCASE("1 byte")
 	{
-		const auto [codepoint, advance] = readUtf8("\x7f");
-		CHECK(codepoint == 0x7f);
-		CHECK(advance == 1);
+		check("\x01", 0x01, 1);
+		check("\x7f", 0x7f, 1);
+		check("\x7f\xbf", 0x7f, 1);
 	}
-	SUBCASE("80")
+	SUBCASE("2 bytes")
 	{
-		const auto [codepoint, advance] = readUtf8("\xc2\x80");
-		CHECK(codepoint == 0x80);
-		CHECK(advance == 2);
+		check("\xc2", 0, 1);
+		check("\xc2\x80", 0x80, 2);
+		check("\xdf\xbf", 0x7ff, 2);
+		check("\xdf\xbf\xbf", 0x7ff, 2);
 	}
-	SUBCASE("7ff")
+	SUBCASE("3 bytes")
 	{
-		const auto [codepoint, advance] = readUtf8("\xdf\xbf");
-		CHECK(codepoint == 0x7ff);
-		CHECK(advance == 2);
+		check("\xe0", 0, 1);
+		check("\xe0\xa0", 0, 2);
+		check("\xe0\xa0\x80", 0x800, 3);
+		check("\xef\xbf\xbf", 0xffff, 3);
+		check("\xef\xbf\xbf\xbf", 0xffff, 3);
 	}
-	SUBCASE("800")
+	SUBCASE("4 bytes")
 	{
-		const auto [codepoint, advance] = readUtf8("\xe0\xa0\x80");
-		CHECK(codepoint == 0x800);
-		CHECK(advance == 3);
+		check("\xf0", 0, 1);
+		check("\xf0\x90", 0, 2);
+		check("\xf0\x90\x80", 0, 3);
+		check("\xf0\x90\x80\x80", 0x10000, 4);
+		check("\xf4\x8f\xbf\xbf", 0x10ffff, 4);
+		check("\xf4\x8f\xbf\xbf\xbf", 0x10ffff, 4);
 	}
-	SUBCASE("ffff")
+	SUBCASE("invalid")
 	{
-		const auto [codepoint, advance] = readUtf8("\xef\xbf\xbf");
-		CHECK(codepoint == 0xffff);
-		CHECK(advance == 3);
-	}
-	SUBCASE("10000")
-	{
-		const auto [codepoint, advance] = readUtf8("\xf0\x90\x80\x80");
-		CHECK(codepoint == 0x10000);
-		CHECK(advance == 4);
-	}
-	SUBCASE("10ffff")
-	{
-		const auto [codepoint, advance] = readUtf8("\xf4\x8f\xbf\xbf");
-		CHECK(codepoint == 0x10ffff);
-		CHECK(advance == 4);
+		// Reading invalid UTF-8 produce wrong codepoints while consuming valid bytes.
+		// This is not considered a problem for now.
+		check("\x80\x3f\x3f\x3f\x3f", 0x3f, 2);
+		check("\x9f\x3f\x3f\x3f\x3f", 0x7ff, 2);
+		check("\xa0\x3f\x3f\x3f\x3f", 0xfff, 3);
+		check("\xaf\x3f\x3f\x3f\x3f", 0xffff, 3);
+		check("\xb0\x3f\x3f\x3f\x3f", 0x3ffff, 4);
+		check("\xbf\x3f\x3f\x3f\x3f", 0x1fffff, 4);
 	}
 }
 

@@ -16,27 +16,23 @@ namespace primal
 
 	[[nodiscard]] constexpr char32_t readUtf8(std::string_view text, size_t& offset) noexcept
 	{
+		if (offset >= text.size())
+			return 0;
 		const auto part1 = static_cast<std::uint8_t>(text[offset++]);
 		if (!(part1 & 0b1000'0000))
 			return part1;
-
 		if (offset == text.size())
 			return 0;
-
 		const auto part2 = char32_t{ static_cast<std::uint8_t>(text[offset++]) & 0b0011'1111u };
 		if (!(part1 & 0b0010'0000))
 			return ((part1 & 0b0001'1111u) << 6) + part2;
-
 		if (offset == text.size())
 			return 0;
-
 		const auto part3 = char32_t{ static_cast<std::uint8_t>(text[offset++]) & 0b0011'1111u };
 		if (!(part1 & 0b0001'0000))
 			return ((part1 & 0b0000'1111u) << 12) + (part2 << 6) + part3;
-
 		if (offset == text.size())
 			return 0;
-
 		const auto part4 = char32_t{ static_cast<std::uint8_t>(text[offset++]) & 0b0011'1111u };
 		return ((part1 & 0b0000'0111u) << 18) + (part2 << 12) + (part3 << 6) + part4;
 	}
