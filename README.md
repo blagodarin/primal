@@ -5,4 +5,7 @@
 
 # Primal
 
-Primal is a utility library that accumulates common functionality from sibling projects.
+Primal is a utility project that accumulates common functionality from sibling projects, namely:
+* C++ header-only general purpose utilities;
+* CMake utilities;
+* CMake-based package management facilities for some third-party C/C++ libraries.
