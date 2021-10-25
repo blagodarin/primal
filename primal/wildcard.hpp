@@ -8,41 +8,38 @@
 
 namespace primal
 {
-	[[nodiscard]] constexpr bool matchWildcard(std::string_view text, std::string_view wildcard) noexcept
+	// Checks if the wildcard pattern matches the specified text.
+	// Wildcard symbols are '?' (matches any character) and '*' (matches any number of any characters).
+	[[nodiscard]] constexpr bool matchWildcard(std::string_view text, std::string_view pattern) noexcept
 	{
 		auto t = text.begin();
-		auto w = wildcard.begin();
-		auto tRestart = text.end();
-		auto wRestart = wildcard.end();
+		auto p = pattern.begin();
+		auto textRestart = text.end();
+		auto patternRestart = pattern.end();
 		while (t != text.end())
 		{
-			if (w != wildcard.end())
+			if (p != pattern.end())
 			{
-				if (*w == '*')
+				if (*p == '*')
 				{
-					++w;
-					tRestart = t;
-					wRestart = w;
+					textRestart = t;
+					patternRestart = ++p;
 					continue;
 				}
-				if (*w == '?' || *w == *t)
+				if (*p == '?' || *t == *p)
 				{
-					++w;
 					++t;
+					++p;
 					continue;
 				}
 			}
-			if (tRestart != text.end())
-			{
-				++tRestart;
-				t = tRestart;
-				w = wRestart;
-				continue;
-			}
-			return false;
+			if (textRestart == text.end())
+				return false;
+			t = ++textRestart;
+			p = patternRestart;
 		}
-		for (; w != wildcard.end(); ++w)
-			if (*w != '*')
+		for (; p != pattern.end(); ++p)
+			if (*p != '*')
 				return false;
 		return true;
 	}
