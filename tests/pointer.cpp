@@ -6,7 +6,7 @@
 
 #include <cstdint>
 
-#include <doctest.h>
+#include <doctest/doctest.h>
 
 namespace
 {

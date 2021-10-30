@@ -24,7 +24,7 @@ function(primal_provide_fmt _output)
 		set(_source_dir ${CMAKE_BINARY_DIR}/${_package})
 		set(_build_dir ${_source_dir}-build)
 		message(STATUS "[PRIMAL] Building fmt from ${_source_dir}")
-		_primal_cmake(${_source_dir} ${_build_dir} ${_install_dir} NO_CMP0074 NO_CMP0091 OPTIONS
+		_primal_cmake(${_source_dir} ${_build_dir} ${_install_dir} OPTIONS
 			-DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
 			-DFMT_DOC=OFF
 			-DFMT_OS=OFF

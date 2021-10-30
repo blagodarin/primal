@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include <doctest.h>
+#include <doctest/doctest.h>
 
 TEST_CASE("matchWildcard")
 {

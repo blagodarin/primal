@@ -4,7 +4,7 @@
 
 #include <primal/scope.hpp>
 
-#include <doctest.h>
+#include <doctest/doctest.h>
 
 TEST_CASE("FINALLY")
 {

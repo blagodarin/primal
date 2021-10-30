@@ -2,34 +2,35 @@
 # Copyright (C) Sergei Blagodarin.
 # SPDX-License-Identifier: Apache-2.0
 
-function(primal_provide_ogg _output)
+function(primal_provide_doctest _output)
 	cmake_parse_arguments(_arg "" "SET_UPDATED;STATIC_RUNTIME" "" ${ARGN})
 	if(_arg_SET_UPDATED)
 		set(${_arg_SET_UPDATED} OFF PARENT_SCOPE)
 	endif()
 	if(_arg_STATIC_RUNTIME)
-		set(_patch ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/ogg.patch)
+		set(_patch ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/doctest_static.patch)
 	else()
-		set(_patch "")
+		set(_patch ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/doctest_shared.patch)
 	endif()
-	set(_version "1.3.5")
-	set(_package "libogg-${_version}")
-	primal_download("http://downloads.xiph.org/releases/ogg/${_package}.tar.xz"
-		SHA1 "5a368421a636f7faa4c2f662857cb507dffd7c99"
-		EXTRACT_DIR ${_package}
+	set(_version "2.4.6")
+	set(_package "doctest-${_version}")
+	primal_download("https://github.com/onqtam/doctest/archive/refs/tags/${_version}.zip"
+		SHA1 "2c228e0aa91d5cbbe8740eaf5b1a50e168171a47"
+		EXTRACT_DIR "${_package}"
 		PATCH ${_patch}
 		RESULT _downloaded)
-	set(_install_dir ${PRIMAL_PACKAGE_DIR}/ogg)
+	set(_install_dir ${PRIMAL_PACKAGE_DIR}/doctest)
 	if(_downloaded OR NOT EXISTS ${_install_dir})
 		set(_source_dir ${CMAKE_BINARY_DIR}/${_package})
 		set(_build_dir ${_source_dir}-build)
-		message(STATUS "[PRIMAL] Building Ogg from ${_source_dir}")
+		message(STATUS "[PRIMAL] Building doctest from ${_source_dir}")
 		_primal_cmake(${_source_dir} ${_build_dir} ${_install_dir} OPTIONS
+			-DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
+			-DCMAKE_POLICY_DEFAULT_CMP0054=NEW # Only interpret if() arguments as variables or keywords when unquoted.
 			-DCMAKE_POLICY_DEFAULT_CMP0091=NEW # MSVC runtime library flags are selected by an abstraction.
-			-DINSTALL_DOCS=OFF
-			-DINSTALL_PKG_CONFIG_MODULE=OFF
+			-DDOCTEST_WITH_TESTS=OFF
 			)
-		message(STATUS "[PRIMAL] Provided Ogg at ${_install_dir}")
+		message(STATUS "[PRIMAL] Provided doctest at ${_install_dir}")
 		if(_arg_SET_UPDATED)
 			set(${_arg_SET_UPDATED} ON PARENT_SCOPE)
 		endif()

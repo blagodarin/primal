@@ -30,6 +30,7 @@ function(primal_provide_freetype _output)
 			-DCMAKE_DISABLE_FIND_PACKAGE_HarfBuzz=ON
 			-DCMAKE_DISABLE_FIND_PACKAGE_PNG=ON
 			-DCMAKE_DISABLE_FIND_PACKAGE_ZLIB=ON
+			-DCMAKE_POLICY_DEFAULT_CMP0091=NEW # MSVC runtime library flags are selected by an abstraction.
 			MSVC_WARNINGS 4244 4267 4312
 			)
 		message(STATUS "[PRIMAL] Provided Freetype at ${_install_dir}")

@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.19)
 
 project(Primal LANGUAGES CXX)
 
-include(cmake/PrimalUtils.cmake)
+include(cmake/PrimalPackages.cmake)
 
 primal_set_defaults()
 
@@ -80,8 +80,9 @@ endif()
 primal_install(primal EXPORT PrimalTargets)
 
 if(PRIMAL_TESTS)
+	primal_provide_doctest(doctest_ROOT STATIC_RUNTIME ON)
+	find_package(doctest REQUIRED)
 	enable_testing()
-	primal_download("https://raw.githubusercontent.com/onqtam/doctest/2.4.6/doctest/doctest.h" SHA1 "40728d2bed7f074e80cb095844820114e7d16ce0")
 	add_subdirectory(tests)
 endif()
 

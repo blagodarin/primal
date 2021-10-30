@@ -10,7 +10,7 @@
 #include <memory>
 #include <type_traits>
 
-#include <doctest.h>
+#include <doctest/doctest.h>
 
 namespace
 {

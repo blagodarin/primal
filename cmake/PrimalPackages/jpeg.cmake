@@ -29,6 +29,7 @@ function(primal_provide_jpeg _output)
 		message(STATUS "[PRIMAL] Building JPEG from ${_source_dir}")
 		_primal_cmake(${_source_dir} ${_build_dir} ${_install_dir} TARGET jpeg-static OPTIONS
 			-DCMAKE_ASM_NASM_COMPILER=${_nasm}
+			-DCMAKE_POLICY_DEFAULT_CMP0091=NEW # MSVC runtime library flags are selected by an abstraction.
 			-DENABLE_SHARED=OFF
 			-DREQUIRE_SIMD=ON
 			-DWITH_ARITH_DEC=OFF

@@ -9,7 +9,6 @@ add_executable(primal_tests
 	fixed.cpp
 	intrinsics.cpp
 	macros.cpp
-	main.cpp
 	pointer.cpp
 	rigid_vector.cpp
 	scope.cpp
@@ -18,11 +17,6 @@ add_executable(primal_tests
 	wildcard.cpp
 	)
 target_include_directories(primal_tests PRIVATE ${PRIMAL_DOWNLOAD_DIR})
-target_link_libraries(primal_tests PRIVATE primal)
+target_link_libraries(primal_tests PRIVATE primal doctest::doctest_with_main)
 set_target_properties(primal_tests PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-	target_compile_options(primal_tests PRIVATE
-		/wd5245 # unreferenced function with internal linkage has been removed
-		)
-endif()
 add_test(NAME primal COMMAND primal_tests)

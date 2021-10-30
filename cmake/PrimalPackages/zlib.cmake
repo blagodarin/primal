@@ -24,7 +24,9 @@ function(primal_provide_zlib _output)
 		set(_source_dir ${CMAKE_BINARY_DIR}/${_package})
 		set(_build_dir ${_source_dir}-build)
 		message(STATUS "[PRIMAL] Building ZLIB from ${_source_dir}")
-		_primal_cmake(${_source_dir} ${_build_dir} ${_install_dir} TARGET zlibstatic MSVC_WARNINGS 4267)
+		_primal_cmake(${_source_dir} ${_build_dir} ${_install_dir} TARGET zlibstatic OPTIONS
+			-DCMAKE_POLICY_DEFAULT_CMP0091=NEW # MSVC runtime library flags are selected by an abstraction.
+			MSVC_WARNINGS 4267)
 		file(INSTALL
 			${_build_dir}/zconf.h
 			${_source_dir}/zlib.h

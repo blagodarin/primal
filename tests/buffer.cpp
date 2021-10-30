@@ -7,7 +7,7 @@
 #include <numeric>
 #include <vector>
 
-#include <doctest.h>
+#include <doctest/doctest.h>
 
 namespace
 {

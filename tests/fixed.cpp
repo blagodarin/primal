@@ -4,7 +4,7 @@
 
 #include <primal/fixed.hpp>
 
-#include <doctest.h>
+#include <doctest/doctest.h>
 
 namespace
 {

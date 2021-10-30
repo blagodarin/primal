@@ -28,6 +28,8 @@ function(primal_provide_vorbis _output)
 		set(_build_dir ${_source_dir}-build)
 		message(STATUS "[PRIMAL] Building ${_package}")
 		_primal_cmake(${_source_dir} ${_build_dir} ${_install_dir} OPTIONS
+			-DCMAKE_POLICY_DEFAULT_CMP0074=NEW # find_package() uses <PackageName>_ROOT variables.
+			-DCMAKE_POLICY_DEFAULT_CMP0091=NEW # MSVC runtime library flags are selected by an abstraction.
 			-DOgg_ROOT=${Ogg_ROOT}
 			MSVC_WARNINGS 4244 4267 4305
 			)

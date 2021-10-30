@@ -7,7 +7,7 @@
 #include <array>
 #include <cstring>
 
-#include <doctest.h>
+#include <doctest/doctest.h>
 
 TEST_CASE("bigEndian(T)")
 {
