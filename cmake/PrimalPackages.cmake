@@ -8,7 +8,7 @@ set(PRIMAL_PACKAGE_DIR ${CMAKE_BINARY_DIR}/_PrimalPackages CACHE PATH "Directory
 mark_as_advanced(PRIMAL_PACKAGE_DIR)
 
 function(_primal_cmake _source_dir _build_dir _install_dir)
-	cmake_parse_arguments(_arg "" "TARGET" "MSVC_WARNINGS;OPTIONS" ${ARGN})
+	cmake_parse_arguments(_arg "NO_CMP0074;NO_CMP0091" "TARGET" "MSVC_WARNINGS;OPTIONS" ${ARGN})
 	file(REMOVE_RECURSE ${_build_dir})
 	file(MAKE_DIRECTORY ${_build_dir})
 	file(REMOVE_RECURSE ${_install_dir})
@@ -22,9 +22,13 @@ function(_primal_cmake _source_dir _build_dir _install_dir)
 	list(APPEND _options
 		-DCMAKE_INSTALL_PREFIX=${_install_dir}
 		-DCMAKE_POSITION_INDEPENDENT_CODE=OFF
-		-DCMAKE_POLICY_DEFAULT_CMP0074=NEW # find_package() uses <PackageName>_ROOT variables.
-		-DCMAKE_POLICY_DEFAULT_CMP0091=NEW # MSVC runtime library flags are selected by an abstraction.
 		)
+	if(NOT _arg_NO_CMP0074)
+		list(APPEND _options -DCMAKE_POLICY_DEFAULT_CMP0074=NEW) # find_package() uses <PackageName>_ROOT variables.
+	endif()
+	if(NOT _arg_NO_CMP0091)
+		list(APPEND _options -DCMAKE_POLICY_DEFAULT_CMP0091=NEW) # MSVC runtime library flags are selected by an abstraction.
+	endif()
 	get_property(_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 	if(_is_multi_config)
 		list(APPEND _options -DCMAKE_DEBUG_POSTFIX=d)

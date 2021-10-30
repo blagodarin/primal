@@ -12,10 +12,10 @@ function(primal_provide_ogg _output)
 	else()
 		set(_patch "")
 	endif()
-	set(_version "1.3.4")
+	set(_version "1.3.5")
 	set(_package "libogg-${_version}")
 	primal_download("http://downloads.xiph.org/releases/ogg/${_package}.tar.xz"
-		SHA1 "f07499a35566aa62affb5ca989f62eed5b8092c3"
+		SHA1 "5a368421a636f7faa4c2f662857cb507dffd7c99"
 		EXTRACT_DIR ${_package}
 		PATCH ${_patch}
 		RESULT _downloaded)
@@ -27,7 +27,6 @@ function(primal_provide_ogg _output)
 		_primal_cmake(${_source_dir} ${_build_dir} ${_install_dir} OPTIONS
 			-DINSTALL_DOCS=OFF
 			-DINSTALL_PKG_CONFIG_MODULE=OFF
-			MSVC_WARNINGS 4244
 			)
 		message(STATUS "[PRIMAL] Provided Ogg at ${_install_dir}")
 		if(_arg_SET_UPDATED)

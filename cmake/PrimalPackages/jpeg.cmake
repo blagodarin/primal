@@ -15,10 +15,10 @@ function(primal_provide_jpeg _output)
 		set(_patch "")
 	endif()
 	primal_provide_nasm(_nasm SET_UPDATED _nasm_updated)
-	set(_version "2.0.6")
+	set(_version "2.1.1")
 	set(_package "libjpeg-turbo-${_version}")
 	primal_download("https://downloads.sourceforge.net/project/libjpeg-turbo/${_version}/${_package}.tar.gz"
-		SHA1 "5406c7676d7df89fb4da791ad5af51202910fb25"
+		SHA1 "f9c3c17479f4fa2c76dba15125552fc9f6bfda80"
 		EXTRACT_DIR "${_package}"
 		PATCH ${_patch}
 		RESULT _downloaded)
