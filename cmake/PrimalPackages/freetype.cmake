@@ -12,10 +12,10 @@ function(primal_provide_freetype _output)
 	else()
 		set(_patch "")
 	endif()
-	set(_version "2.11.0")
+	set(_version "2.10.4") # 2.11.0 has an issue: https://gitlab.freedesktop.org/freetype/freetype/-/issues/1075
 	set(_package "freetype-${_version}")
 	primal_download("https://downloads.sourceforge.net/project/freetype/freetype2/${_version}/${_package}.tar.gz"
-		SHA1 "e9272ae073e35bb65aa39d55e49a309313f007a7"
+		SHA1 "040d6a4be23708132c85ef9df837eb3f8a04c4ab"
 		EXTRACT_DIR "${_package}"
 		PATCH ${_patch}
 		RESULT _downloaded)
