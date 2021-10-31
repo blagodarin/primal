@@ -2,9 +2,9 @@
 // Copyright (C) Sergei Blagodarin.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <primal/wildcard.hpp>
+#include <primal/string_utils.hpp>
 
-#include <string>
+#include <vector>
 
 #include <doctest/doctest.h>
 
@@ -63,4 +63,32 @@ TEST_CASE("matchWildcard")
 		CHECK(!matchWildcard("abc"s + "de" + "fgh", "abc*def*fgh"));
 		CHECK(!matchWildcard("abc"s + "def" + "fgh" + "xyz", "abc*def*fgh"));
 	}
+}
+
+TEST_CASE("normalizeWhitespace")
+{
+	const auto check = [](const std::string& withoutSpace, const std::string& withSpace, const std::vector<std::string_view>& strings) {
+		for (const auto string : strings)
+		{
+			{
+				std::string stripped{ string };
+				primal::normalizeWhitespace(stripped, primal::TrailingSpace::Remove);
+				CHECK(stripped == withoutSpace);
+			}
+			{
+				std::string stripped{ string };
+				primal::normalizeWhitespace(stripped, primal::TrailingSpace::Keep);
+				CHECK(stripped == withSpace);
+			}
+		}
+	};
+	check("", "", { "", " ", "   " });
+	check("a", "a", { "a", " a" });
+	check("b", "b ", { "b ", " b " });
+	check("c d e", "c d e", { "c d e", " c d e" });
+	check("f g h", "f g h ", { "f g h ", " f g h " });
+	check("ijk", "ijk", { "ijk", "   ijk" });
+	check("lmn", "lmn ", { "lmn   ", "   lmn   " });
+	check("opq rst", "opq rst", { "opq   rst", "   opq   rst" });
+	check("uvw xyz", "uvw xyz ", { "uvw   xyz   ", "   uvw   xyz   " });
 }

@@ -73,8 +73,8 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
 		primal/rigid_vector.hpp
 		primal/scope.hpp
 		primal/static_vector.hpp
+		primal/string_utils.hpp
 		primal/utf8.hpp
-		primal/wildcard.hpp
 		)
 endif()
 primal_install(primal EXPORT PrimalTargets)
