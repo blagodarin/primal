@@ -53,12 +53,13 @@ namespace primal
 	}
 
 	// Replaces sequences of spaces and ASCII control characters with a single space.
-	// Removes leading whitespace, and optionally removes trainling whitespace.
-	inline void normalizeWhitespace(std::string& string, TrailingSpace trailingSpace) noexcept
+	// Removes leading whitespace, and optionally removes trailing whitespace.
+	// Returns the new end iterator.
+	template <typename It>
+	[[nodiscard]] constexpr It normalizeWhitespace(It begin, It end, TrailingSpace trailingSpace) noexcept
 	{
-		auto out = string.begin();
 		char last = '\0';
-		for (auto in = out; in != string.end(); ++in)
+		for (auto in = begin; in != end; ++in)
 		{
 			if (static_cast<unsigned char>(*in) > 0x20)
 				last = *in;
@@ -66,10 +67,17 @@ namespace primal
 				last = ' ';
 			else
 				continue;
-			*out++ = last;
+			*begin++ = last;
 		}
 		if (trailingSpace == TrailingSpace::Remove && last == ' ')
-			--out;
-		string.resize(static_cast<size_t>(out - string.begin()));
+			--begin;
+		return begin;
+	}
+
+	// Replaces sequences of spaces and ASCII control characters with a single space.
+	// Removes leading whitespace, and optionally removes trailing whitespace.
+	inline void normalizeWhitespace(std::string& string, TrailingSpace trailingSpace) noexcept
+	{
+		string.resize(static_cast<size_t>(normalizeWhitespace(string.begin(), string.end(), trailingSpace) - string.begin()));
 	}
 }
