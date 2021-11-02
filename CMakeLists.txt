@@ -65,6 +65,7 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
 	target_sources(primal PRIVATE
 		primal/allocator.hpp
 		primal/buffer.hpp
+		primal/dsp.hpp
 		primal/endian.hpp
 		primal/fixed.hpp
 		primal/intrinsics.hpp

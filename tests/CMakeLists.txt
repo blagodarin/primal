@@ -5,6 +5,7 @@
 add_executable(primal_tests
 	allocator.cpp
 	buffer.cpp
+	dsp.cpp
 	endian.cpp
 	fixed.cpp
 	intrinsics.cpp
