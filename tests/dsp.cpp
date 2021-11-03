@@ -16,18 +16,6 @@ namespace
 	{
 		return N * sizeof(T) > primal::kDspAlignment && N * sizeof(T) % primal::kDspAlignment != 0;
 	}
-
-	template <typename T>
-	void duplicate1D()
-	{
-		constexpr size_t kTestSamples = (4 * primal::kDspAlignment - 1) / sizeof(T);
-		alignas(primal::kDspAlignment) std::array<T, kTestSamples> input{};
-		std::iota(input.begin(), input.end(), T{ 1 });
-		alignas(primal::kDspAlignment) std::array<T, kTestSamples * 2> output{};
-		primal::duplicate1D(output.data(), input.data(), kTestSamples);
-		for (size_t i = 0; i < output.size(); ++i)
-			CHECK(output[i] == input[i / 2]);
-	}
 }
 
 TEST_CASE("addSaturate1D")
@@ -50,10 +38,28 @@ TEST_CASE("addSaturate1D")
 		CHECK(first[i] == expected[i]);
 }
 
-TEST_CASE("duplicate1D")
+TEST_CASE("duplicate1D_16")
 {
-	SUBCASE("int16_t") { ::duplicate1D<int16_t>(); }
-	SUBCASE("float") { ::duplicate1D<float>(); }
+	constexpr size_t length = (2 * primal::kDspAlignment - 1) / sizeof(int16_t);
+	alignas(primal::kDspAlignment) std::array<int16_t, length> input{};
+	static_assert(::checkSize(input));
+	std::iota(input.begin(), input.end(), int16_t{ 1 });
+	alignas(primal::kDspAlignment) std::array<int16_t, length * 2> output{};
+	primal::duplicate1D_16(output.data(), input.data(), length);
+	for (size_t i = 0; i < output.size(); ++i)
+		CHECK(output[i] == input[i / 2]);
+}
+
+TEST_CASE("duplicate1D_32")
+{
+	constexpr size_t length = (2 * primal::kDspAlignment - 1) / sizeof(float);
+	alignas(primal::kDspAlignment) std::array<float, length> input{};
+	static_assert(::checkSize(input));
+	std::iota(input.begin(), input.end(), 1.f);
+	alignas(primal::kDspAlignment) std::array<float, length * 2> output{};
+	primal::duplicate1D_32(output.data(), input.data(), length);
+	for (size_t i = 0; i < output.size(); ++i)
+		CHECK(output[i] == input[i / 2]);
 }
 
 TEST_CASE("normalize1D")
