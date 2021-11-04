@@ -9,17 +9,27 @@
 #include <cstddef>
 #include <cstdint>
 
+// Some DSP functions perform past-the-end memory reads if data size is not a multiple of the alignment.
+// This is technically fine since there are no past-the-end writes, and reads can't access unmapped memory
+// because the data is required to be aligned. However, ASAN still catches past-the-end reads, so we need
+// to disable it (or write somewhat slower code).
+#if PRIMAL_INTRINSICS_SSE && (defined(__GNUC__) || defined(__clang__))
+#	define PRIMAL_NO_ASAN __attribute__((no_sanitize_address))
+#else
+#	define PRIMAL_NO_ASAN
+#endif
+
 namespace primal
 {
 	constexpr size_t kDspAlignment = PRIMAL_INTRINSICS_SSE ? 16 : 1;
 
-	inline void addSaturate1D(float* dst, const float* src, size_t length) noexcept
+	PRIMAL_NO_ASAN inline void addSaturate1D(float* dst, const float* src, size_t length) noexcept
 	{
 #if PRIMAL_INTRINSICS_SSE
 		size_t i = 0;
-		for (; i < (length & ~size_t{ 0b11 }); i += 4)
+		for (; i < (length & ~size_t{ 3 }); i += 4)
 			_mm_store_ps(dst + i, _mm_min_ps(_mm_set1_ps(1.f), _mm_max_ps(_mm_set1_ps(-1.f), _mm_add_ps(_mm_load_ps(dst + i), _mm_load_ps(src + i)))));
-		if (i != length)
+		if (length & 3)
 		{
 			const auto block = _mm_min_ps(_mm_set1_ps(1.f), _mm_max_ps(_mm_set1_ps(-1.f), _mm_add_ps(_mm_load_ps(dst + i), _mm_load_ps(src + i))));
 			if (length & 2)
