@@ -106,8 +106,8 @@ void primal::duplicate1D_32(void* dst, const void* src, size_t length) noexcept
 void primal::normalize1D(float* dst, const int16_t* src, size_t length) noexcept
 {
 	constexpr auto unit = 1.f / 32768.f;
-	size_t i = 0;
 #if PRIMAL_INTRINSICS_SSE
+	size_t i = 0;
 	for (; i < (length & ~size_t{ 0b111 }); i += 8)
 	{
 		const auto block = _mm_load_si128(reinterpret_cast<const __m128i*>(src + i));
@@ -116,32 +116,22 @@ void primal::normalize1D(float* dst, const int16_t* src, size_t length) noexcept
 	}
 	if (length & 0b111)
 	{
-		auto block = _mm_load_si128(reinterpret_cast<const __m128i*>(src + i));
+		const auto input = _mm_load_si128(reinterpret_cast<const __m128i*>(src + i));
+		auto output = _mm_mul_ps(_mm_set1_ps(unit), _mm_cvtepi32_ps(_mm_cvtepi16_epi32(input)));
+		const auto remainder = length & 0b11;
 		if (length & 0b100)
 		{
-			_mm_store_ps(dst + i, _mm_mul_ps(_mm_set1_ps(unit), _mm_cvtepi32_ps(_mm_cvtepi16_epi32(block))));
-			if (!(length & 0b11))
+			_mm_store_ps(dst + i, output);
+			if (!remainder)
 				return;
-			block = _mm_srli_si128(block, 8);
+			output = _mm_mul_ps(_mm_set1_ps(unit), _mm_cvtepi32_ps(_mm_cvtepi16_epi32(_mm_srli_si128(input, 8))));
 			i += 4;
 		}
-		else if (!(length & 0b11))
-			return;
-		auto second = _mm_mul_ps(_mm_set1_ps(unit), _mm_cvtepi32_ps(_mm_cvtepi16_epi32(block)));
-		if (length & 0b10)
-		{
-			_mm_storel_pi(reinterpret_cast<__m64*>(dst + i), second);
-			if (!(length & 0b1))
-				return;
-			second = _mm_unpackhi_ps(second, second);
-			i += 2;
-		}
-		else if (!(length & 0b1))
-			return;
-		_mm_store_ss(dst + i, second);
+		const auto mask = _mm_set_epi64x((int64_t{ 1 } << (remainder * 16)) - 1, 0);
+		_mm_maskmoveu_si128(_mm_castps_si128(output), _mm_unpackhi_epi8(mask, mask), reinterpret_cast<char*>(dst + i));
 	}
 #else
-	for (; i < length; ++i)
+	for (size_t i = 0; i < length; ++i)
 		dst[i] = static_cast<float>(src[i]) * unit;
 #endif
 }

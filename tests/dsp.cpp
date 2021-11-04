@@ -15,30 +15,27 @@ namespace
 	template <typename T, size_t N>
 	constexpr bool checkSize(const std::array<T, N>&) noexcept
 	{
-		return N * sizeof(T) > primal::kDspAlignment && N * sizeof(T) % primal::kDspAlignment == 0;
+		return N * sizeof(T) > 2 * primal::kDspAlignment           // To be able to check every possible remainder length.
+			&& N * sizeof(T) % primal::kDspAlignment == sizeof(T); // To check we're not triggering ASAN.
 	}
 }
 
 TEST_CASE("addSaturate1D")
 {
-	alignas(primal::kDspAlignment) std::array<float, 16> first{};
+	alignas(primal::kDspAlignment) std::array<float, 17> first{};
 	static_assert(::checkSize(first));
 	alignas(primal::kDspAlignment) const std::array<float, first.size()> second{
-		-.875f, -.75f, -.625f, -.5f, -.375f, -.25f, -.125f, -0.f,
-		.125f, .25f, .375f, .5f, .625f, .75f, .875f, 1.f
+		-1.f, -.875f, -.75f, -.625f, -.5f, -.375f, -.25f, -.125f,
+		0.f, .125f, .25f, .375f, .5f, .625f, .75f, .875f, 1.f
 	};
 	const std::array<float, first.size()> expected{
 		-1.f, -1.f, -1.f, -1.f, -.875f, -.625f, -.375f, -.125f,
-		.125f, .375f, .625f, .875f, 1.f, 1.f, 1.f, 1.f
+		.125f, .375f, .625f, .875f, 1.f, 1.f, 1.f, 1.f, 1.f
 	};
 	for (auto size = first.size(); size >= first.size() - primal::kDspAlignment / sizeof first[0]; --size)
 	{
 		INFO("size = " << size);
-		std::generate_n(first.begin(), size, [value = -1.f]() mutable {
-			const auto result = value;
-			value += .125f;
-			return result;
-		});
+		std::generate_n(first.begin(), size, [value = -1.f]() mutable { return value += .125f; });
 		std::fill_n(first.begin() + static_cast<ptrdiff_t>(size), first.size() - size, 2.f);
 		primal::addSaturate1D(first.data(), second.data(), size);
 		for (size_t i = 0; i < size; ++i)
@@ -56,7 +53,7 @@ TEST_CASE("addSaturate1D")
 
 TEST_CASE("duplicate1D_16")
 {
-	alignas(primal::kDspAlignment) const std::array<int16_t, 16> input{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+	alignas(primal::kDspAlignment) const std::array<int16_t, 17> input{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
 	static_assert(::checkSize(input));
 	alignas(primal::kDspAlignment) std::array<int16_t, input.size() * 2> output{};
 	for (auto size = input.size(); size >= input.size() - primal::kDspAlignment / sizeof input[0]; --size)
@@ -79,7 +76,7 @@ TEST_CASE("duplicate1D_16")
 
 TEST_CASE("duplicate1D_32")
 {
-	alignas(primal::kDspAlignment) const std::array<int32_t, 8> input{ 1, 2, 3, 4, 5, 6, 7, 8 };
+	alignas(primal::kDspAlignment) const std::array<int32_t, 9> input{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 	static_assert(::checkSize(input));
 	alignas(primal::kDspAlignment) std::array<int32_t, input.size() * 2> output{};
 	for (auto size = input.size(); size >= input.size() - primal::kDspAlignment / sizeof input[0]; --size)
@@ -102,14 +99,14 @@ TEST_CASE("duplicate1D_32")
 
 TEST_CASE("normalize1D")
 {
-	alignas(primal::kDspAlignment) const std::array<int16_t, 16> input{
+	alignas(primal::kDspAlignment) const std::array<int16_t, 17> input{
 		-32768, -28672, -24576, -20480, -16384, -12288, -8192, -4096,
-		0, 4096, 8192, 12288, 16384, 20480, 24576, 28672
+		0, 4096, 8192, 12288, 16384, 20480, 24576, 28672, 30720
 	};
 	static_assert(::checkSize(input));
 	const std::array<float, input.size()> expected{
 		-1.f, -.875f, -.75f, -.625f, -.5f, -.375f, -.25f, -.125f,
-		0.f, .125f, .25f, .375f, .5f, .625f, .75f, .875f
+		0.f, .125f, .25f, .375f, .5f, .625f, .75f, .875f, 0.9375f
 	};
 	alignas(primal::kDspAlignment) std::array<float, expected.size()> actual{};
 	for (auto size = input.size(); size >= input.size() - primal::kDspAlignment / sizeof input[0]; --size)
@@ -132,16 +129,16 @@ TEST_CASE("normalize1D")
 
 TEST_CASE("normalizeDuplicate1D")
 {
-	alignas(primal::kDspAlignment) const std::array<int16_t, 16> input{
+	alignas(primal::kDspAlignment) const std::array<int16_t, 17> input{
 		-32768, -28672, -24576, -20480, -16384, -12288, -8192, -4096,
-		0, 4096, 8192, 12288, 16384, 20480, 24576, 28672
+		0, 4096, 8192, 12288, 16384, 20480, 24576, 28672, 30720
 	};
 	static_assert(::checkSize(input));
 	const std::array<float, input.size() * 2> expected{
-		-1.000f, -1.000f, -0.875f, -0.875f, -0.750f, -0.750f, -0.625f, -0.625f,
-		-0.500f, -0.500f, -0.375f, -0.375f, -0.250f, -0.250f, -0.125f, -0.125f,
-		0.000f, 0.000f, 0.125f, 0.125f, 0.250f, 0.250f, 0.375f, 0.375f,
-		0.500f, 0.500f, 0.625f, 0.625f, 0.750f, 0.750f, 0.875f, 0.875f
+		-1.f, -1.f, -.875f, -.875f, -.75f, -.75f, -.625f, -.625f,
+		-.5f, -.5f, -.375f, -.375f, -.25f, -.25f, -.125f, -.125f,
+		0.f, 0.f, .125f, .125f, .25f, .25f, .375f, .375f, .5f, .5f,
+		.625f, .625f, .75f, .75f, .875f, .875f, .9375f, .9375f
 	};
 	alignas(primal::kDspAlignment) std::array<float, expected.size()> actual{};
 	for (auto size = input.size(); size >= input.size() - primal::kDspAlignment / sizeof input[0]; --size)
