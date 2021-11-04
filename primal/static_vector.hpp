@@ -12,7 +12,7 @@
 namespace primal
 {
 	// std::vector-like container with preallocated storage (like std::array).
-	template <typename T, size_t kCapacity>
+	template <typename T, size_t kCapacity, size_t kAlignment = alignof(T)>
 	class StaticVector
 	{
 	public:
@@ -20,6 +20,12 @@ namespace primal
 		StaticVector(const StaticVector&) = delete;
 		~StaticVector() noexcept { clear(); }
 		StaticVector& operator=(const StaticVector&) = delete;
+
+		StaticVector(std::initializer_list<T> initializers) noexcept
+			: _size{ initializers.size() <= kCapacity ? initializers.size() : kCapacity }
+		{
+			std::uninitialized_copy_n(initializers.begin(), _size, _data);
+		}
 
 		[[nodiscard]] constexpr T* begin() noexcept { return reinterpret_cast<T*>(_data); }
 		[[nodiscard]] constexpr const T* begin() const noexcept { return reinterpret_cast<const T*>(_data); }
@@ -80,6 +86,6 @@ namespace primal
 
 	private:
 		size_t _size = 0;
-		std::aligned_storage_t<sizeof(T), alignof(T)> _data[kCapacity];
+		alignas(kAlignment) std::aligned_storage_t<sizeof(T), alignof(T)> _data[kCapacity];
 	};
 }
