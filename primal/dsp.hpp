@@ -21,87 +21,144 @@
 
 namespace primal
 {
+	// Minimum alignment for DSP data.
 	constexpr size_t kDspAlignment = PRIMAL_INTRINSICS_SSE ? 16 : 1;
 
-	PRIMAL_NO_ASAN inline void addSaturate1D(float* dst, const float* src, size_t length) noexcept
-	{
+	// Adds 32-bit floating point values, clamping the result to [-1, 1].
+	// Requires SSE2.
+	PRIMAL_NO_ASAN inline void addSaturate1D(float* dst, const float* src, size_t length) noexcept;
+
+	// Duplicates 16-bit values.
+	// Requires SSE2.
+	inline void duplicate1D_16(void* dst, const void* src, size_t length) noexcept;
+
+	// Duplicates 32-bit values.
+	// Requires SSE2.
+	inline void duplicate1D_32(void* dst, const void* src, size_t length) noexcept;
+
+	// Converts 16-bit integers in [-32768, 32768) to 32-bit floats in [-1, 1).
+	// Requires SSE4.1.
+	PRIMAL_NO_ASAN inline void normalize1D(float* dst, const int16_t* src, size_t length) noexcept;
+
+	// Converts 16-bit integers in [-32768, 32768) to 32-bit floats in [-1, 1) and duplicates every value.
+	inline void normalizeDuplicate1D(float* dst, const int16_t* src, size_t length) noexcept;
+}
+
+void primal::addSaturate1D(float* dst, const float* src, size_t length) noexcept
+{
 #if PRIMAL_INTRINSICS_SSE
-		size_t i = 0;
-		for (; i < (length & ~size_t{ 3 }); i += 4)
-			_mm_store_ps(dst + i, _mm_min_ps(_mm_set1_ps(1.f), _mm_max_ps(_mm_set1_ps(-1.f), _mm_add_ps(_mm_load_ps(dst + i), _mm_load_ps(src + i)))));
-		if (length & 3)
+	size_t i = 0;
+	for (; i < (length & ~size_t{ 0b11 }); i += 4)
+		_mm_store_ps(dst + i, _mm_min_ps(_mm_set1_ps(1.f), _mm_max_ps(_mm_set1_ps(-1.f), _mm_add_ps(_mm_load_ps(dst + i), _mm_load_ps(src + i)))));
+	if (length & 0b11)
+	{
+		const auto block = _mm_min_ps(_mm_set1_ps(1.f), _mm_max_ps(_mm_set1_ps(-1.f), _mm_add_ps(_mm_load_ps(dst + i), _mm_load_ps(src + i))));
+		if (length & 0b10)
 		{
-			const auto block = _mm_min_ps(_mm_set1_ps(1.f), _mm_max_ps(_mm_set1_ps(-1.f), _mm_add_ps(_mm_load_ps(dst + i), _mm_load_ps(src + i))));
-			if (length & 2)
-			{
-				_mm_storel_pi(reinterpret_cast<__m64*>(dst + i), block);
-				i += 2;
-			}
-			if (length & 1)
-				_mm_store_ss(dst + i, _mm_unpackhi_ps(block, block));
+			_mm_storel_pi(reinterpret_cast<__m64*>(dst + i), block);
+			if (length & 0b1)
+				_mm_store_ss(dst + i + 2, _mm_unpackhi_ps(block, block));
 		}
+		else if (length & 0b1)
+			_mm_store_ss(dst + i, block);
+	}
 #else
-		for (size_t i = 0; i < length; ++i)
-		{
-			const auto value = dst[i] + src[i];
-			dst[i] = value < -1.f ? -1.f : (value > 1.f ? 1.f : value);
-		}
-#endif
-	}
-
-	inline void duplicate1D_16(void* dst, const void* src, size_t length) noexcept
+	for (size_t i = 0; i < length; ++i)
 	{
-		size_t i = 0;
+		const auto value = dst[i] + src[i];
+		dst[i] = value < -1.f ? -1.f : (value > 1.f ? 1.f : value);
+	}
+#endif
+}
+
+void primal::duplicate1D_16(void* dst, const void* src, size_t length) noexcept
+{
+	size_t i = 0;
 #if PRIMAL_INTRINSICS_SSE
-		for (; i < (length & ~size_t{ 0b111 }); i += 8)
-		{
-			const auto block = _mm_load_si128(reinterpret_cast<const __m128i*>(static_cast<const uint16_t*>(src) + i));
-			_mm_store_si128(reinterpret_cast<__m128i*>(static_cast<uint16_t*>(dst) + 2 * i), _mm_unpacklo_epi16(block, block));
-			_mm_store_si128(reinterpret_cast<__m128i*>(static_cast<uint16_t*>(dst) + 2 * i + 8), _mm_unpackhi_epi16(block, block));
-		}
-#endif
-		for (; i < length; ++i)
-		{
-			const auto value = static_cast<const uint16_t*>(src)[i]; // This does generate better assembly.
-			static_cast<uint16_t*>(dst)[2 * i] = value;
-			static_cast<uint16_t*>(dst)[2 * i + 1] = value;
-		}
-	}
-
-	inline void duplicate1D_32(void* dst, const void* src, size_t length) noexcept
+	for (; i < (length & ~size_t{ 0b111 }); i += 8)
 	{
-		size_t i = 0;
+		const auto block = _mm_load_si128(reinterpret_cast<const __m128i*>(static_cast<const uint16_t*>(src) + i));
+		_mm_store_si128(reinterpret_cast<__m128i*>(static_cast<uint16_t*>(dst) + 2 * i), _mm_unpacklo_epi16(block, block));
+		_mm_store_si128(reinterpret_cast<__m128i*>(static_cast<uint16_t*>(dst) + 2 * i + 8), _mm_unpackhi_epi16(block, block));
+	}
+#endif
+	for (; i < length; ++i)
+	{
+		const auto value = static_cast<const uint16_t*>(src)[i]; // This does generate better assembly.
+		static_cast<uint16_t*>(dst)[2 * i] = value;
+		static_cast<uint16_t*>(dst)[2 * i + 1] = value;
+	}
+}
+
+void primal::duplicate1D_32(void* dst, const void* src, size_t length) noexcept
+{
+	size_t i = 0;
 #if PRIMAL_INTRINSICS_SSE
-		for (; i < (length & ~size_t{ 0b11 }); i += 4)
-		{
-			const auto block = _mm_load_si128(reinterpret_cast<const __m128i*>(static_cast<const uint32_t*>(src) + i));
-			_mm_store_si128(reinterpret_cast<__m128i*>(static_cast<uint32_t*>(dst) + 2 * i), _mm_unpacklo_epi32(block, block));
-			_mm_store_si128(reinterpret_cast<__m128i*>(static_cast<uint32_t*>(dst) + 2 * i + 4), _mm_unpackhi_epi32(block, block));
-		}
+	for (; i < (length & ~size_t{ 0b11 }); i += 4)
+	{
+		const auto block = _mm_load_si128(reinterpret_cast<const __m128i*>(static_cast<const uint32_t*>(src) + i));
+		_mm_store_si128(reinterpret_cast<__m128i*>(static_cast<uint32_t*>(dst) + 2 * i), _mm_unpacklo_epi32(block, block));
+		_mm_store_si128(reinterpret_cast<__m128i*>(static_cast<uint32_t*>(dst) + 2 * i + 4), _mm_unpackhi_epi32(block, block));
+	}
 #endif
-		for (; i < length; ++i)
-		{
-			const auto value = static_cast<const uint32_t*>(src)[i]; // This does generate better assembly.
-			static_cast<uint32_t*>(dst)[2 * i] = value;
-			static_cast<uint32_t*>(dst)[2 * i + 1] = value;
-		}
-	}
-
-	inline void normalize1D(float* dst, const int16_t* src, size_t length) noexcept
+	for (; i < length; ++i)
 	{
-		constexpr auto unit = 1.f / 32768.f;
-		for (; length > 0; --length)
-			*dst++ = static_cast<float>(*src++) * unit;
+		const auto value = static_cast<const uint32_t*>(src)[i]; // This does generate better assembly.
+		static_cast<uint32_t*>(dst)[2 * i] = value;
+		static_cast<uint32_t*>(dst)[2 * i + 1] = value;
 	}
+}
 
-	inline void normalizeDuplicate1D(float* dst, const int16_t* src, size_t length) noexcept
+void primal::normalize1D(float* dst, const int16_t* src, size_t length) noexcept
+{
+	constexpr auto unit = 1.f / 32768.f;
+	size_t i = 0;
+#if PRIMAL_INTRINSICS_SSE
+	for (; i < (length & ~size_t{ 0b111 }); i += 8)
 	{
-		constexpr auto scale = 1.f / 32768.f;
-		for (; length > 0; --length)
+		const auto block = _mm_load_si128(reinterpret_cast<const __m128i*>(src + i));
+		_mm_store_ps(dst + i, _mm_mul_ps(_mm_set1_ps(unit), _mm_cvtepi32_ps(_mm_cvtepi16_epi32(block))));
+		_mm_store_ps(dst + i + 4, _mm_mul_ps(_mm_set1_ps(unit), _mm_cvtepi32_ps(_mm_cvtepi16_epi32(_mm_srli_si128(block, 8)))));
+	}
+	if (length & 0b111)
+	{
+		auto block = _mm_load_si128(reinterpret_cast<const __m128i*>(src + i));
+		if (length & 0b100)
 		{
-			const auto value = static_cast<float>(*src++) * scale;
-			*dst++ = value;
-			*dst++ = value;
+			_mm_store_ps(dst + i, _mm_mul_ps(_mm_set1_ps(unit), _mm_cvtepi32_ps(_mm_cvtepi16_epi32(block))));
+			if (!(length & 0b11))
+				return;
+			block = _mm_srli_si128(block, 8);
+			i += 4;
 		}
+		else if (!(length & 0b11))
+			return;
+		auto second = _mm_mul_ps(_mm_set1_ps(unit), _mm_cvtepi32_ps(_mm_cvtepi16_epi32(block)));
+		if (length & 0b10)
+		{
+			_mm_storel_pi(reinterpret_cast<__m64*>(dst + i), second);
+			if (!(length & 0b1))
+				return;
+			second = _mm_unpackhi_ps(second, second);
+			i += 2;
+		}
+		else if (!(length & 0b1))
+			return;
+		_mm_store_ss(dst + i, second);
+	}
+#else
+	for (; i < length; ++i)
+		dst[i] = static_cast<float>(src[i]) * unit;
+#endif
+}
+
+void primal::normalizeDuplicate1D(float* dst, const int16_t* src, size_t length) noexcept
+{
+	constexpr auto scale = 1.f / 32768.f;
+	for (; length > 0; --length)
+	{
+		const auto value = static_cast<float>(*src++) * scale;
+		*dst++ = value;
+		*dst++ = value;
 	}
 }
