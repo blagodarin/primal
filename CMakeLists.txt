@@ -61,22 +61,23 @@ endif()
 
 add_library(primal INTERFACE)
 target_include_directories(primal INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
-	target_sources(primal PRIVATE
-		primal/allocator.hpp
-		primal/buffer.hpp
-		primal/dsp.hpp
-		primal/endian.hpp
-		primal/fixed.hpp
-		primal/intrinsics.hpp
-		primal/macros.hpp
-		primal/pointer.hpp
-		primal/rigid_vector.hpp
-		primal/scope.hpp
-		primal/static_vector.hpp
-		primal/string_utils.hpp
-		primal/utf8.hpp
-		)
+target_sources(primal PRIVATE
+	primal/allocator.hpp
+	primal/buffer.hpp
+	primal/dsp.hpp
+	primal/endian.hpp
+	primal/fixed.hpp
+	primal/intrinsics.hpp
+	primal/macros.hpp
+	primal/pointer.hpp
+	primal/rigid_vector.hpp
+	primal/scope.hpp
+	primal/static_vector.hpp
+	primal/string_utils.hpp
+	primal/utf8.hpp
+	)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	target_compile_options(primal INTERFACE -msse4.1)
 endif()
 primal_install(primal EXPORT PrimalTargets)
 

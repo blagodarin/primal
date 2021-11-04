@@ -33,6 +33,7 @@ TEST_CASE("addSaturate1D")
 	};
 	for (auto size = first.size(); size > first.size() - primal::kDspAlignment / sizeof first[0]; --size)
 	{
+		INFO("size = " << size);
 		std::generate_n(first.begin(), size, [value = -1.f]() mutable {
 			const auto result = value;
 			value += .125f;
@@ -41,9 +42,15 @@ TEST_CASE("addSaturate1D")
 		std::fill_n(first.begin() + static_cast<ptrdiff_t>(size), first.size() - size, 2.f);
 		primal::addSaturate1D(first.data(), second.data(), size);
 		for (size_t i = 0; i < size; ++i)
+		{
+			INFO("i = " << i);
 			CHECK(first[i] == expected[i]);
+		}
 		for (size_t i = size; i < first.size(); ++i)
+		{
+			INFO("i = " << i);
 			CHECK(first[i] == 2.f);
+		}
 	}
 }
 
@@ -52,14 +59,21 @@ TEST_CASE("duplicate1D_16")
 	alignas(primal::kDspAlignment) const std::array<int16_t, 16> input{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
 	static_assert(::checkSize(input));
 	alignas(primal::kDspAlignment) std::array<int16_t, input.size() * 2> output{};
-	for (auto size = input.size(); size > input.size() - primal::kDspAlignment / input[0]; --size)
+	for (auto size = input.size(); size > input.size() - primal::kDspAlignment / sizeof input[0]; --size)
 	{
+		INFO("size = " << size);
 		std::fill(output.begin(), output.end(), int16_t{ 0 });
 		primal::duplicate1D_16(output.data(), input.data(), size);
 		for (size_t i = 0; i < size * 2; ++i)
+		{
+			INFO("i = " << i);
 			CHECK(output[i] == input[i / 2]);
+		}
 		for (auto i = size * 2; i < output.size(); ++i)
+		{
+			INFO("i = " << i);
 			CHECK(output[i] == 0);
+		}
 	}
 }
 
@@ -68,14 +82,21 @@ TEST_CASE("duplicate1D_32")
 	alignas(primal::kDspAlignment) const std::array<int32_t, 8> input{ 1, 2, 3, 4, 5, 6, 7, 8 };
 	static_assert(::checkSize(input));
 	alignas(primal::kDspAlignment) std::array<int32_t, input.size() * 2> output{};
-	for (auto size = input.size(); size > input.size() - primal::kDspAlignment / input[0]; --size)
+	for (auto size = input.size(); size > input.size() - primal::kDspAlignment / sizeof input[0]; --size)
 	{
+		INFO("size = " << size);
 		std::fill(output.begin(), output.end(), int32_t{ 0 });
-		primal::duplicate1D_16(output.data(), input.data(), size);
-		for (size_t i = 0; i < size; ++i)
+		primal::duplicate1D_32(output.data(), input.data(), size);
+		for (size_t i = 0; i < size * 2; ++i)
+		{
+			INFO("i = " << i);
 			CHECK(output[i] == input[i / 2]);
-		for (auto i = size; i < output.size(); ++i)
+		}
+		for (auto i = size * 2; i < output.size(); ++i)
+		{
+			INFO("i = " << i);
 			CHECK(output[i] == 0);
+		}
 	}
 }
 
@@ -93,12 +114,19 @@ TEST_CASE("normalize1D")
 	alignas(primal::kDspAlignment) std::array<float, expected.size()> actual{};
 	for (auto size = input.size(); size > input.size() - primal::kDspAlignment / sizeof input[0]; --size)
 	{
+		INFO("size = " << size);
 		std::fill(actual.begin(), actual.end(), 2.f);
 		primal::normalize1D(actual.data(), input.data(), size);
 		for (size_t i = 0; i < size; ++i)
+		{
+			INFO("i = " << i);
 			CHECK(actual[i] == expected[i]);
+		}
 		for (size_t i = size; i < actual.size(); ++i)
+		{
+			INFO("i = " << i);
 			CHECK(actual[i] == 2.f);
+		}
 	}
 }
 
@@ -118,11 +146,18 @@ TEST_CASE("normalizeDuplicate1D")
 	alignas(primal::kDspAlignment) std::array<float, expected.size()> actual{};
 	for (auto size = input.size(); size > input.size() - primal::kDspAlignment / sizeof input[0]; --size)
 	{
+		INFO("size = " << size);
 		std::fill(actual.begin(), actual.end(), 2.f);
 		primal::normalizeDuplicate1D(actual.data(), input.data(), size);
 		for (size_t i = 0; i < size * 2; ++i)
+		{
+			INFO("i = " << i);
 			CHECK(actual[i] == expected[i]);
+		}
 		for (auto i = size * 2; i < actual.size(); ++i)
+		{
+			INFO("i = " << i);
 			CHECK(actual[i] == 2.f);
+		}
 	}
 }
