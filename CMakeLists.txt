@@ -13,6 +13,7 @@ primal_set_defaults()
 if(PRIMAL_SUBPROJECT)
 	include(cmake/PrimalPackages.cmake)
 else()
+	option(PRIMAL_BENCHMARKS "Build Primal benchmarks" OFF)
 	option(PRIMAL_TESTS "Build Primal tests" OFF)
 endif()
 
@@ -20,7 +21,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	add_compile_options(-Werror -Weverything
 		-Wno-c++98-compat
 		-Wno-c++98-compat-pedantic
-		-Wno-float-equal
 		)
 endif()
 
@@ -55,6 +55,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 		/wd4711 # function selected for automatic inline expansion
 		/wd4738 # storing 32-bit float result in memory, possible loss of performance
 		/wd4820 # 'bytes' bytes padding added after construct 'member_name'
+		/wd5027 # move assignment operator was implicitly defined as deleted
 		/wd5045 # Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
 		)
 endif()
@@ -86,6 +87,12 @@ if(PRIMAL_TESTS)
 	find_package(doctest REQUIRED)
 	enable_testing()
 	add_subdirectory(tests)
+endif()
+
+if(PRIMAL_BENCHMARKS)
+	primal_provide_benchmark(benchmark_ROOT)
+	find_package(benchmark REQUIRED)
+	add_subdirectory(benchmarks)
 endif()
 
 include(CMakePackageConfigHelpers)

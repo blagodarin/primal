@@ -17,7 +17,9 @@ add_executable(primal_tests
 	string_utils.cpp
 	utf8.cpp
 	)
-target_include_directories(primal_tests PRIVATE ${PRIMAL_DOWNLOAD_DIR})
 target_link_libraries(primal_tests PRIVATE primal doctest::doctest_with_main)
 set_target_properties(primal_tests PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	target_compile_options(primal_tests PRIVATE -Wno-float-equal)
+endif()
 add_test(NAME primal COMMAND primal_tests)

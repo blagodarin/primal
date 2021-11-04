@@ -19,6 +19,12 @@ matrix:
     - os: linux
       dist: focal
       compiler: gcc
+      env: GCC=10 CONFIG=Debug SANITIZERS=1
+      addons: *gcc_addons
+
+    - os: linux
+      dist: focal
+      compiler: gcc
       env: GCC=10 CONFIG=Debug COVERAGE=1
       addons: *gcc_addons
 
@@ -36,7 +42,7 @@ matrix:
     - os: linux
       dist: focal
       compiler: clang
-      env: CLANG=11 CONFIG=Debug
+      env: CLANG=11 CONFIG=Debug SANITIZERS=1
       addons: *clang_addons
 
 before_install:
@@ -54,12 +60,12 @@ install:
   - if [ -n "${COVERAGE}" ]; then pip install --user codecov; fi
 
 script:
-  - if [ -z "${COVERAGE}" ]; then export CXXFLAGS="-fsanitize=address -fsanitize=undefined -fno-sanitize=nonnull-attribute"; fi
-  - if [ -z "${COVERAGE}" ]; then export LDFLAGS="-fsanitize=address -fsanitize=undefined"; fi
+  - if [ -n "${SANITIZERS}" ]; then export CXXFLAGS="-fsanitize=address -fsanitize=undefined -fno-sanitize=nonnull-attribute"; fi
+  - if [ -n "${SANITIZERS}" ]; then export LDFLAGS="-fsanitize=address -fsanitize=undefined"; fi
   - if [ -n "${COVERAGE}" ]; then export CXXFLAGS="--coverage"; fi
   - if [ -n "${COVERAGE}" ]; then export LDFLAGS="--coverage"; fi
   - mkdir "${HOME}/primal.build" && pushd "${HOME}/primal.build"
-  - cmake "${TRAVIS_BUILD_DIR}" -G Ninja -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_INSTALL_PREFIX="${HOME}/primal.install" -DPRIMAL_TESTS=ON
+  - cmake "${TRAVIS_BUILD_DIR}" -G Ninja -DCMAKE_BUILD_TYPE=${CONFIG} -DCMAKE_INSTALL_PREFIX="${HOME}/primal.install" -DPRIMAL_BENCHMARKS=ON -DPRIMAL_TESTS=ON
   - TERM=dumb cmake --build .
   - ASAN_OPTIONS=allocator_may_return_null=1 ctest --verbose
   - TERM=dumb cmake --build . --target install
@@ -70,7 +76,8 @@ script:
   - popd
 
 after_success:
-  - if [ -n "${COVERAGE}" ]; then codecov --gcov-root "${HOME}/primal.build" --gcov-exec gcov-${GCC} --gcov-args "-s `pwd`"; fi
+  - if [ -z "${COVERAGE}" ] && [ -z "${SANITIZERS}" ]; then ${HOME}/primal.build/benchmarks/primal_benchmarks; fi
+  - if [ -z "${COVERAGE}" ] && [ -z "${SANITIZERS}" ]; then codecov --gcov-root "${HOME}/primal.build" --gcov-exec gcov-${GCC} --gcov-args "-s `pwd`"; fi
 
 notifications:
   email: false

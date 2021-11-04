@@ -29,9 +29,6 @@ namespace
 
 	using CleanAllocator = TestAllocator<primal::CleanAllocator<primal::Allocator>>;
 	using CleanAllocatorPtr = std::unique_ptr<void, CleanAllocator>;
-
-	// GCC issues a warning if the allocation size is known at compile time and exceeds this value.
-	constexpr auto kMaxSize = static_cast<size_t>(std::numeric_limits<std::make_signed_t<size_t>>::max());
 }
 
 TEST_CASE("Allocator::allocate(1)")
@@ -43,21 +40,11 @@ TEST_CASE("Allocator::allocate(1)")
 	CHECK(misalignment != 0);
 }
 
-TEST_CASE("Allocator::allocate(SIZE_MAX)")
-{
-	CHECK_THROWS_AS(AllocatorPtr pointer{ primal::Allocator::allocate(kMaxSize) }, std::bad_alloc);
-}
-
 TEST_CASE("AlignedAllocator::allocate(1)")
 {
 	AlignedAllocatorPtr pointer{ AlignedAllocator::allocate(1) };
 	CHECK(pointer);
 	CHECK(reinterpret_cast<uintptr_t>(pointer.get()) % kAlignment == 0);
-}
-
-TEST_CASE("AlignedAllocator::allocate(SIZE_MAX)")
-{
-	CHECK_THROWS_AS(AlignedAllocatorPtr pointer{ AlignedAllocator::allocate(kMaxSize - kMaxSize % kAlignment) }, std::bad_alloc);
 }
 
 TEST_CASE("CleanAllocator::allocate()")
@@ -68,3 +55,21 @@ TEST_CASE("CleanAllocator::allocate()")
 	const auto data = reinterpret_cast<std::byte*>(pointer.get());
 	CHECK(data + size == std::find_if(data, data + size, [](std::byte byte) { return std::to_integer<int>(byte) != 0; }));
 }
+
+// std::malloc doesn't return nullptr in ASAN-less Clang builds.
+#if !defined(__clang__)
+
+// GCC issues a warning if the allocation size is known at compile time and exceeds this value.
+constexpr auto kMaxSize = static_cast<size_t>(std::numeric_limits<std::make_signed_t<size_t>>::max());
+
+TEST_CASE("Allocator::allocate(SIZE_MAX)")
+{
+	CHECK_THROWS_AS(AllocatorPtr pointer{ primal::Allocator::allocate(kMaxSize) }, std::bad_alloc);
+}
+
+TEST_CASE("AlignedAllocator::allocate(SIZE_MAX)")
+{
+	CHECK_THROWS_AS(AlignedAllocatorPtr pointer{ AlignedAllocator::allocate(kMaxSize - kMaxSize % kAlignment) }, std::bad_alloc);
+}
+
+#endif
