@@ -50,17 +50,11 @@ void primal::addSaturate1D(float* dst, const float* src, size_t length) noexcept
 	size_t i = 0;
 	for (; i < (length & ~size_t{ 0b11 }); i += 4)
 		_mm_store_ps(dst + i, _mm_min_ps(_mm_set1_ps(1.f), _mm_max_ps(_mm_set1_ps(-1.f), _mm_add_ps(_mm_load_ps(dst + i), _mm_load_ps(src + i)))));
-	if (length & 0b11)
+	if (const auto remainder = length & 0b11)
 	{
 		const auto block = _mm_min_ps(_mm_set1_ps(1.f), _mm_max_ps(_mm_set1_ps(-1.f), _mm_add_ps(_mm_load_ps(dst + i), _mm_load_ps(src + i))));
-		if (length & 0b10)
-		{
-			_mm_storel_pi(reinterpret_cast<__m64*>(dst + i), block);
-			if (length & 0b1)
-				_mm_store_ss(dst + i + 2, _mm_unpackhi_ps(block, block));
-		}
-		else if (length & 0b1)
-			_mm_store_ss(dst + i, block);
+		const auto mask = _mm_set_epi64x((int64_t{ 1 } << (remainder * 16)) - 1, 0);
+		_mm_maskmoveu_si128(_mm_castps_si128(block), _mm_unpackhi_epi8(mask, mask), reinterpret_cast<char*>(dst + i));
 	}
 #else
 	for (size_t i = 0; i < length; ++i)
