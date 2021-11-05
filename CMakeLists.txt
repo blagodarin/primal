@@ -2,7 +2,7 @@
 # Copyright (C) Sergei Blagodarin.
 # SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.21)
 
 project(Primal LANGUAGES CXX)
 
@@ -10,9 +10,7 @@ include(cmake/PrimalPackages.cmake)
 
 primal_set_defaults()
 
-if(PRIMAL_SUBPROJECT)
-	include(cmake/PrimalPackages.cmake)
-else()
+if(PROJECT_IS_TOP_LEVEL)
 	option(PRIMAL_BENCHMARKS "Build Primal benchmarks" OFF)
 	option(PRIMAL_TESTS "Build Primal tests" OFF)
 endif()
