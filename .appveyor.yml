@@ -37,7 +37,8 @@ install:
 build_script:
   - set BUILD_DIR=%APPVEYOR_BUILD_FOLDER%\.build
   - set INSTALL_DIR=%APPVEYOR_BUILD_FOLDER%\.install
-  - cmake -S "%APPVEYOR_BUILD_FOLDER%" -B "%BUILD_DIR%" %EXTRA_CMAKE_FLAGS% -DCMAKE_INSTALL_PREFIX="%INSTALL_DIR%" -DPRIMAL_BENCHMARKS=ON -DPRIMAL_TESTS=ON
+  - if not "%CONFIG%"=="Debug" set EXTRA_CMAKE_FLAGS=%EXTRA_CMAKE_FLAGS% -DPRIMAL_BENCHMARKS=ON
+  - cmake -S "%APPVEYOR_BUILD_FOLDER%" -B "%BUILD_DIR%" %EXTRA_CMAKE_FLAGS% -DCMAKE_INSTALL_PREFIX="%INSTALL_DIR%" -DPRIMAL_TESTS=ON
   - cmake --build "%BUILD_DIR%" %EXTRA_BUILD_FLAGS%
   - cmake --build "%BUILD_DIR%" --target install %EXTRA_BUILD_FLAGS%
   - set IMPORT_DIR=%APPVEYOR_BUILD_FOLDER%\.build-import
@@ -47,5 +48,4 @@ build_script:
 test_script:
   - cd %BUILD_DIR%
   - ctest --verbose %EXTRA_TEST_FLAGS%
-  - cd %INSTALL_DIR%\bin
-  - primal_benchmarks.exe
+  - if not "%CONFIG%"=="Debug" %INSTALL_DIR%\bin\primal_benchmarks.exe
