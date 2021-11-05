@@ -24,105 +24,108 @@ namespace primal
 	// Minimum alignment for DSP data.
 	constexpr size_t kDspAlignment = PRIMAL_INTRINSICS_SSE ? 16 : 1;
 
-	// Adds 32-bit floats.
-	// Requires SSE2.
-	inline void add1D(float* dst, const float* src, size_t length) noexcept;
+	// Adds 32-bit floats to the output buffer with the same number of interleaved channels.
+	inline void addSamples1D(float* dst, const float* src, size_t length) noexcept;
 
-	// Requires SSE4.1.
-	inline void addNormalized1D(float* dst, const int16_t* src, size_t length) noexcept;
+	// Converts 16-bit integers in [-32768, 32768) to 32-bit floats in [-1, 1)
+	// and adds them to the output buffer with the same number of interleaved channels.
+	inline void addSamples1D(float* dst, const int16_t* src, size_t length) noexcept;
 
-	// Requires SSE4.1.
-	inline void addNormalizedDuplicated1D(float* dst, const int16_t* src, size_t srcLength) noexcept;
+	// Adds 32-bit floats to the output buffer with twice the number of interleaved channels.
+	inline void addSamples2x1D(float* dst, const float* src, size_t length) noexcept;
 
-	// Adds 32-bit floating point values, clamping the result to [-1, 1].
-	// Requires SSE2.
-	inline void addSaturate1D(float* dst, const float* src, size_t length) noexcept;
+	// Converts 16-bit integers in [-32768, 32768) to 32-bit floats in [-1, 1)
+	// and adds them to the output buffer with twice the number of interleaved channels.
+	inline void addSamples2x1D(float* dst, const int16_t* src, size_t length) noexcept;
 
 	// Duplicates 16-bit values.
-	// Requires SSE2.
 	inline void duplicate1D_16(void* dst, const void* src, size_t length) noexcept;
 
 	// Duplicates 32-bit values.
-	// Requires SSE2.
 	inline void duplicate1D_32(void* dst, const void* src, size_t length) noexcept;
-
-	// Converts 16-bit integers in [-32768, 32768) to 32-bit floats in [-1, 1).
-	// Requires SSE4.1.
-	PRIMAL_NO_ASAN inline void normalize1D(float* dst, const int16_t* src, size_t length) noexcept;
-
-	// Converts 16-bit integers in [-32768, 32768) to 32-bit floats in [-1, 1) and duplicates every value.
-	inline void normalizeDuplicate1D(float* dst, const int16_t* src, size_t length) noexcept;
 }
 
-void primal::add1D(float* dst, const float* src, size_t length) noexcept
+void primal::addSamples1D(float* dst, const float* src, size_t length) noexcept
 {
-	size_t i = 0;
-#if PRIMAL_INTRINSICS_SSE
-	for (; i < (length & ~size_t{ 0b11 }); i += 4)
-		_mm_store_ps(dst + i, _mm_add_ps(_mm_load_ps(dst + i), _mm_load_ps(src + i)));
-#endif
-	for (; i < length; ++i)
+	// No manual SSE optimization succeeded.
+	for (size_t i = 0; i < length; ++i)
 		dst[i] += src[i];
 }
 
-void primal::addNormalized1D(float* dst, const int16_t* src, size_t length) noexcept
+void primal::addSamples1D(float* dst, const int16_t* src, size_t length) noexcept
 {
 	constexpr auto unit = 1.f / 32768.f;
-	size_t i = 0;
-#if PRIMAL_INTRINSICS_SSE
-	for (; i < (length & ~size_t{ 0b111 }); i += 8)
+#if PRIMAL_INTRINSICS_SSE // 10-20% faster with MSVC.
+	for (; length >= 8; length -= 8)
 	{
-		const auto block = _mm_load_si128(reinterpret_cast<const __m128i*>(src + i));
-		_mm_store_ps(dst + i, _mm_add_ps(_mm_load_ps(dst + i), _mm_mul_ps(_mm_set1_ps(unit), _mm_cvtepi32_ps(_mm_cvtepi16_epi32(block)))));
-		_mm_store_ps(dst + i + 4, _mm_add_ps(_mm_load_ps(dst + i + 4), _mm_mul_ps(_mm_set1_ps(unit), _mm_cvtepi32_ps(_mm_cvtepi16_epi32(_mm_srli_si128(block, 8))))));
+		const auto input = _mm_load_si128(reinterpret_cast<const __m128i*>(src));
+		src += 8;
+		_mm_store_ps(dst, _mm_add_ps(_mm_load_ps(dst), _mm_mul_ps(_mm_set1_ps(unit), _mm_cvtepi32_ps(_mm_cvtepi16_epi32(input)))));
+		dst += 4;
+		_mm_store_ps(dst, _mm_add_ps(_mm_load_ps(dst), _mm_mul_ps(_mm_set1_ps(unit), _mm_cvtepi32_ps(_mm_cvtepi16_epi32(_mm_srli_si128(input, 8))))));
+		dst += 4;
 	}
-#endif
-	for (; i < length; ++i)
+	for (; length > 0; --length) // For some reason it's faster than i-based loop with the preceding SSE-optimized loop, but slower without one.
+		*dst++ += static_cast<float>(*src++) * unit;
+#else
+	for (size_t i = 0; i < length; ++i)
 		dst[i] += static_cast<float>(src[i]) * unit;
+#endif
 }
 
-void primal::addNormalizedDuplicated1D(float* dst, const int16_t* src, size_t srcLength) noexcept
+void primal::addSamples2x1D(float* dst, const float* src, size_t length) noexcept
+{
+#if PRIMAL_INTRINSICS_SSE // 150-200% faster with MSVC.
+	for (; length >= 4; length -= 4)
+	{
+		const auto input = _mm_load_ps(src);
+		src += 4;
+		_mm_store_ps(dst, _mm_add_ps(_mm_load_ps(dst), _mm_unpacklo_ps(input, input)));
+		dst += 4;
+		_mm_store_ps(dst, _mm_add_ps(_mm_load_ps(dst), _mm_unpackhi_ps(input, input)));
+		dst += 4;
+	}
+#endif
+	for (; length > 0; --length)
+	{
+		const auto value = *src++;
+		*dst++ += value;
+		*dst++ += value;
+	}
+}
+
+void primal::addSamples2x1D(float* dst, const int16_t* src, size_t length) noexcept
 {
 	constexpr auto unit = 1.f / 32768.f;
-	size_t i = 0;
-#if PRIMAL_INTRINSICS_SSE
-	for (; i < (srcLength & ~size_t{ 0b111 }); i += 8)
+#if PRIMAL_INTRINSICS_SSE // 150-170% faster with MSVC.
+	for (; length >= 8; length -= 8)
 	{
-		const auto input = _mm_load_si128(reinterpret_cast<const __m128i*>(src + i));
+		const auto input = _mm_load_si128(reinterpret_cast<const __m128i*>(src));
+		src += 8;
 		const auto normalized1 = _mm_mul_ps(_mm_set1_ps(unit), _mm_cvtepi32_ps(_mm_cvtepi16_epi32(input)));
 		const auto normalized2 = _mm_mul_ps(_mm_set1_ps(unit), _mm_cvtepi32_ps(_mm_cvtepi16_epi32(_mm_srli_si128(input, 8))));
-		_mm_store_ps(dst + i * 2, _mm_add_ps(_mm_load_ps(dst + i * 2), _mm_unpacklo_ps(normalized1, normalized1)));
-		_mm_store_ps(dst + i * 2 + 4, _mm_add_ps(_mm_load_ps(dst + i * 2 + 4), _mm_unpackhi_ps(normalized1, normalized1)));
-		_mm_store_ps(dst + i * 2 + 8, _mm_add_ps(_mm_load_ps(dst + i * 2 + 8), _mm_unpacklo_ps(normalized2, normalized2)));
-		_mm_store_ps(dst + i * 2 + 12, _mm_add_ps(_mm_load_ps(dst + i * 2 + 12), _mm_unpackhi_ps(normalized2, normalized2)));
+		_mm_store_ps(dst, _mm_add_ps(_mm_load_ps(dst), _mm_unpacklo_ps(normalized1, normalized1)));
+		dst += 4;
+		_mm_store_ps(dst, _mm_add_ps(_mm_load_ps(dst), _mm_unpackhi_ps(normalized1, normalized1)));
+		dst += 4;
+		_mm_store_ps(dst, _mm_add_ps(_mm_load_ps(dst), _mm_unpacklo_ps(normalized2, normalized2)));
+		dst += 4;
+		_mm_store_ps(dst, _mm_add_ps(_mm_load_ps(dst), _mm_unpackhi_ps(normalized2, normalized2)));
+		dst += 4;
 	}
 #endif
-	for (; i < srcLength; ++i)
+	for (; length > 0; --length)
 	{
-		const auto value = static_cast<float>(src[i]) * unit;
-		dst[i * 2] += value;
-		dst[i * 2 + 1] += value;
-	}
-}
-
-void primal::addSaturate1D(float* dst, const float* src, size_t length) noexcept
-{
-	size_t i = 0;
-#if PRIMAL_INTRINSICS_SSE
-	for (; i < (length & ~size_t{ 0b11 }); i += 4)
-		_mm_store_ps(dst + i, _mm_min_ps(_mm_set1_ps(1.f), _mm_max_ps(_mm_set1_ps(-1.f), _mm_add_ps(_mm_load_ps(dst + i), _mm_load_ps(src + i)))));
-#endif
-	for (; i < length; ++i)
-	{
-		const auto value = dst[i] + src[i];
-		dst[i] = value < -1.f ? -1.f : (value > 1.f ? 1.f : value);
+		const auto value = static_cast<float>(*src++) * unit;
+		*dst++ += value;
+		*dst++ += value;
 	}
 }
 
 void primal::duplicate1D_16(void* dst, const void* src, size_t length) noexcept
 {
 	size_t i = 0;
-#if PRIMAL_INTRINSICS_SSE
+#if PRIMAL_INTRINSICS_SSE // 4-8x faster with MSVC.
 	for (; i < (length & ~size_t{ 0b111 }); i += 8)
 	{
 		const auto block = _mm_load_si128(reinterpret_cast<const __m128i*>(static_cast<const uint16_t*>(src) + i));
@@ -141,7 +144,7 @@ void primal::duplicate1D_16(void* dst, const void* src, size_t length) noexcept
 void primal::duplicate1D_32(void* dst, const void* src, size_t length) noexcept
 {
 	size_t i = 0;
-#if PRIMAL_INTRINSICS_SSE
+#if PRIMAL_INTRINSICS_SSE // 2-4x faster with MSVC.
 	for (; i < (length & ~size_t{ 0b11 }); i += 4)
 	{
 		const auto block = _mm_load_si128(reinterpret_cast<const __m128i*>(static_cast<const uint32_t*>(src) + i));
@@ -154,49 +157,5 @@ void primal::duplicate1D_32(void* dst, const void* src, size_t length) noexcept
 		const auto value = static_cast<const uint32_t*>(src)[i]; // This does generate better assembly.
 		static_cast<uint32_t*>(dst)[2 * i] = value;
 		static_cast<uint32_t*>(dst)[2 * i + 1] = value;
-	}
-}
-
-void primal::normalize1D(float* dst, const int16_t* src, size_t length) noexcept
-{
-	constexpr auto unit = 1.f / 32768.f;
-#if PRIMAL_INTRINSICS_SSE
-	size_t i = 0;
-	for (; i < (length & ~size_t{ 0b111 }); i += 8)
-	{
-		const auto block = _mm_load_si128(reinterpret_cast<const __m128i*>(src + i));
-		_mm_store_ps(dst + i, _mm_mul_ps(_mm_set1_ps(unit), _mm_cvtepi32_ps(_mm_cvtepi16_epi32(block))));
-		_mm_store_ps(dst + i + 4, _mm_mul_ps(_mm_set1_ps(unit), _mm_cvtepi32_ps(_mm_cvtepi16_epi32(_mm_srli_si128(block, 8)))));
-	}
-	if (length & 0b111)
-	{
-		const auto input = _mm_load_si128(reinterpret_cast<const __m128i*>(src + i));
-		auto output = _mm_mul_ps(_mm_set1_ps(unit), _mm_cvtepi32_ps(_mm_cvtepi16_epi32(input)));
-		const auto remainder = length & 0b11;
-		if (length & 0b100)
-		{
-			_mm_store_ps(dst + i, output);
-			if (!remainder)
-				return;
-			output = _mm_mul_ps(_mm_set1_ps(unit), _mm_cvtepi32_ps(_mm_cvtepi16_epi32(_mm_srli_si128(input, 8))));
-			i += 4;
-		}
-		const auto mask = _mm_set_epi64x((int64_t{ 1 } << (remainder * 16)) - 1, 0);
-		_mm_maskmoveu_si128(_mm_castps_si128(output), _mm_unpackhi_epi8(mask, mask), reinterpret_cast<char*>(dst + i));
-	}
-#else
-	for (size_t i = 0; i < length; ++i)
-		dst[i] = static_cast<float>(src[i]) * unit;
-#endif
-}
-
-void primal::normalizeDuplicate1D(float* dst, const int16_t* src, size_t length) noexcept
-{
-	constexpr auto scale = 1.f / 32768.f;
-	for (; length > 0; --length)
-	{
-		const auto value = static_cast<float>(*src++) * scale;
-		*dst++ = value;
-		*dst++ = value;
 	}
 }
