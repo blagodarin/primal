@@ -20,6 +20,6 @@ add_executable(primal_tests
 target_link_libraries(primal_tests PRIVATE primal doctest::doctest_with_main)
 set_target_properties(primal_tests PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-	target_compile_options(primal_tests PRIVATE -Wno-float-equal)
+	target_compile_options(primal_tests PRIVATE -Wno-float-equal -Wno-padded)
 endif()
 add_test(NAME primal COMMAND primal_tests)
