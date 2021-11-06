@@ -1,5 +1,5 @@
 name: Linux
-on: [push, pull_request]
+on: [ push, pull_request ]
 jobs:
   ci:
     name: Linux
@@ -21,9 +21,13 @@ jobs:
       - uses: seanmiddleditch/gha-setup-ninja@master
       - name: CMake
         env:
-          CXX: ${{matrix.cxx}}
+          CXX: ${{ matrix.cxx }}
         run: |
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=${{matrix.config}} -DCMAKE_INSTALL_PREFIX="${{github.workspace}}/install" -DPRIMAL_BENCHMARKS=ON -DPRIMAL_TESTS=ON
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
+            -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/install" \
+            -DPRIMAL_BENCHMARKS=${{ matrix.config != 'Debug' && 'ON' || 'OFF' }} \
+            -DPRIMAL_TESTS=ON
       - name: Build
         run: |
           cmake --build build
@@ -31,12 +35,14 @@ jobs:
         run: |
           cd build
           ASAN_OPTIONS=allocator_may_return_null=1 ctest --verbose
-      - name: Install
+      - name: Check installation
+        env:
+          CXX: ${{ matrix.cxx }}
         run: |
           cmake --build build --target install
-      - name: Import
-        run: |
-          cmake -S tests/import -B build.import -G Ninja -DCMAKE_BUILD_TYPE=${{matrix.config}} -DCMAKE_PREFIX_PATH="${{github.workspace}}/install"
+          cmake -S tests/import -B build.import -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
+            -DCMAKE_PREFIX_PATH="${{ github.workspace }}/install"
           cmake --build build.import
       - name: Benchmark
         if: matrix.config != 'Debug'
