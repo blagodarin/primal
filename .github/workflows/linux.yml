@@ -7,9 +7,13 @@ jobs:
     strategy:
       matrix:
         include:
-          - gcc: 10
+          - cxx: g++-10
             config: Release
-          - gcc: 10
+          - cxx: g++-10
+            config: Debug
+          - cxx: clang++-12
+            config: Release
+          - cxx: clang++-12
             config: Debug
       fail-fast: false
     steps:
@@ -17,7 +21,7 @@ jobs:
       - uses: seanmiddleditch/gha-setup-ninja@master
       - name: CMake
         env:
-          CXX: g++-${{matrix.gcc}}
+          CXX: ${{matrix.cxx}}
         run: |
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=${{matrix.config}} -DCMAKE_INSTALL_PREFIX="${{github.workspace}}/install" -DPRIMAL_BENCHMARKS=ON -DPRIMAL_TESTS=ON
       - name: Build
@@ -34,3 +38,7 @@ jobs:
         run: |
           cmake -S tests/import -B build.import -G Ninja -DCMAKE_BUILD_TYPE=${{matrix.config}} -DCMAKE_PREFIX_PATH="${{github.workspace}}/install"
           cmake --build build.import
+      - name: Benchmark
+        if: matrix.config != 'Debug'
+        run: |
+          build/benchmarks/primal_benchmarks
