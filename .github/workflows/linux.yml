@@ -1,0 +1,36 @@
+name: Linux
+on: [push, pull_request]
+jobs:
+  ci:
+    name: Linux
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - gcc: 10
+            config: Release
+          - gcc: 10
+            config: Debug
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - uses: seanmiddleditch/gha-setup-ninja@master
+      - name: CMake
+        env:
+          CXX: g++-${{matrix.gcc}}
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=${{matrix.config}} -DCMAKE_INSTALL_PREFIX="${{github.workspace}}/install" -DPRIMAL_BENCHMARKS=ON -DPRIMAL_TESTS=ON
+      - name: Build
+        run: |
+          cmake --build build
+      - name: Test
+        run: |
+          cd build
+          ASAN_OPTIONS=allocator_may_return_null=1 ctest --verbose
+      - name: Install
+        run: |
+          cmake --build build --target install
+      - name: Import
+        run: |
+          cmake -S tests/import -B build.import -G Ninja -DCMAKE_BUILD_TYPE=${{matrix.config}} -DCMAKE_PREFIX_PATH="${{github.workspace}}/install"
+          cmake --build build.import
