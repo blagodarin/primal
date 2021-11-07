@@ -11,10 +11,12 @@ jobs:
             config: Release
           - cxx: g++-10
             config: Debug
+            mode: sanitizers
           - cxx: clang++-12
             config: Release
           - cxx: clang++-12
             config: Debug
+            mode: sanitizers
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
@@ -23,6 +25,10 @@ jobs:
         env:
           CXX: ${{ matrix.cxx }}
         run: |
+          if [ "${{ matrix.mode }}" == "sanitizers" ]; then
+            export CXXFLAGS="-fsanitize=address -fsanitize=undefined -fno-sanitize=nonnull-attribute"
+            export LDFLAGS="-fsanitize=address -fsanitize=undefined"
+          fi
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
             -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/install" \
