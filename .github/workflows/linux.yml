@@ -12,6 +12,9 @@ jobs:
           - cxx: g++-10
             config: Debug
             mode: sanitizers
+          - cxx: g++-10
+            config: Debug
+            mode: coverage
           - cxx: clang++-12
             config: Release
           - cxx: clang++-12
@@ -25,10 +28,16 @@ jobs:
         env:
           CXX: ${{ matrix.cxx }}
         run: |
-          if [ "${{ matrix.mode }}" == "sanitizers" ]; then
-            export CXXFLAGS="-fsanitize=address -fsanitize=undefined -fno-sanitize=nonnull-attribute"
-            export LDFLAGS="-fsanitize=address -fsanitize=undefined"
-          fi
+          case "${{ matrix.mode }}" in
+            coverage)
+              export CXXFLAGS="--coverage"
+              export LDFLAGS="--coverage"
+              ;;
+            sanitizers)
+              export CXXFLAGS="-fsanitize=address -fsanitize=undefined -fno-sanitize=nonnull-attribute"
+              export LDFLAGS="-fsanitize=address -fsanitize=undefined"
+              ;;
+          esac
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
             -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/install" \
@@ -54,3 +63,8 @@ jobs:
         if: matrix.config != 'Debug'
         run: |
           build/benchmarks/primal_benchmarks
+      - name: Upload coverage to Codecov
+        if: matrix.mode == 'coverage'
+        run: |
+          pip install --user codecov
+          codecov --gcov-root "${{ github.workspace }}/build" --gcov-exec gcov-10 --gcov-args "-s `pwd`"
