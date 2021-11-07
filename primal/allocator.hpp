@@ -19,7 +19,8 @@ namespace primal
 		[[nodiscard]] static void* allocate(size_t size)
 		{
 			if (const auto memory = std::malloc(size); memory)
-				PRIMAL_LIKELY return memory;
+				[[likely]]
+				return memory;
 			throw std::bad_alloc{};
 		}
 
@@ -44,7 +45,8 @@ namespace primal
 #else
 			if (const auto memory = std::aligned_alloc(kAlignment, alignedSize); memory)
 #endif
-				PRIMAL_LIKELY return memory;
+				[[likely]]
+				return memory;
 			throw std::bad_alloc{};
 		}
 
